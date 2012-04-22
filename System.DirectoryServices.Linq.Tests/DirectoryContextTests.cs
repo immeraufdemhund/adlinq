@@ -49,7 +49,7 @@ namespace System.DirectoryServices.Linq.Tests
 		{
 			using (var context = new DirectoryContextMock())
 			{
-				var users = context.Users.Where(u => u.FirstName == "Stephen" && (u.LastName == "Danso" || u.LastName == "Baker"))
+				var users = context.Users.Where(u => u.FirstName == "Stephen" && (u.LastName == "Test" || u.LastName == "Baker"))
 					.OrderBy(u => u.LastName)
 					.Select(u => new { Name = string.Concat(u.FirstName, " ", u.LastName) })
 					.ToList();
@@ -73,12 +73,12 @@ namespace System.DirectoryServices.Linq.Tests
 		{
 			using (var context = new DirectoryContextMock())
 			{
-				var single = context.Users.First(u => u.UserName == "x171728");
-				var groups = single.Groups.First(g => g.Name.StartsWith("PRERS"));
+				var single = context.Users.First(u => u.UserName == "sbaker");
+				var groups = single.Groups.First(g => g.Name.StartsWith("TEST"));
 				Assert.IsNotNull(single);
 				Assert.IsNotNull(groups);
 				Assert.AreEqual(single.FirstName, "Stephen");
-				Assert.IsNotNull(groups.Name.StartsWith("PRERS"));
+				Assert.IsNotNull(groups.Name.StartsWith("TEST"));
 			}
 		}
 
@@ -88,11 +88,11 @@ namespace System.DirectoryServices.Linq.Tests
 			using (var context = new DirectoryContextMock())
 			{
 				var single = (from u in context.Users
-							  where u.UserName == "x171728"
+							  where u.UserName == "sbaker"
 							  select u).Single();
 
 				Assert.IsNotNull(single);
-				Assert.AreEqual(single.UserName, "X171728");
+				Assert.AreEqual(single.UserName, "sbaker");
 				Assert.AreNotEqual(single.Id, Guid.Empty);
 			}
 		}
@@ -186,7 +186,7 @@ namespace System.DirectoryServices.Linq.Tests
 		{
 			using (var context = new DirectoryContextMock())
 			{
-				var single = context.Users.Where(u => u.Email == "stephen.baker@prudential.com").FirstOrDefault();
+				var single = context.Users.Where(u => u.Email == "sbaker@logikbug.com").FirstOrDefault();
 
 				//single = new User();
 				//context.ChangeTracker.TrackChanges(single);
