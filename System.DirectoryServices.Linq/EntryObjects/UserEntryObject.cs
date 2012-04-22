@@ -10,7 +10,7 @@ namespace System.DirectoryServices.Linq.EntryObjects
 		/// <param name="password">The value to set as the password.</param>
 		/// <returns>true if the password was set, false otherwise.</returns>
 		public bool SetPassword(string password)
-		{
+		{ 
 			if (!string.IsNullOrEmpty(password))
 			{
 				var setPasswordResult = Entry.Invoke("SetPassword", new[]
