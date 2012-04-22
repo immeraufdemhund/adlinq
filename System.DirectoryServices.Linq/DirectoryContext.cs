@@ -27,6 +27,11 @@ namespace System.DirectoryServices.Linq
 			ConnectionString = connectionString;
 		}
 
+		public DirectoryContext(string connectionString, string userName, string password) : this(new DirectoryEntry(connectionString, userName, password))
+		{
+			ConnectionString = connectionString;
+		}
+
 		public DirectoryContext(DirectoryEntry domainEntry)
 		{
 			DomainEntry = domainEntry;
