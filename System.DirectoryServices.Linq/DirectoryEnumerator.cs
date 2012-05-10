@@ -160,27 +160,21 @@ namespace System.DirectoryServices.Linq
 				Reset();
 			}
 
-			try
+			if (_resultEnumerator != null && _resultEnumerator.MoveNext())
 			{
-				if (_resultEnumerator != null && _resultEnumerator.MoveNext())
+				var currentResult = _resultEnumerator.Current;
+
+				if (_projection != null)
 				{
-					var currentResult = _resultEnumerator.Current;
-
-					if (_projection != null)
-					{
-						var currentObject = _resultMapper.Map(_origionalType, currentResult);
-						_current = (T)_projection.DynamicInvoke(currentObject);
-					}
-					else
-					{
-						_current = _resultMapper.Map<T>(currentResult);
-					}
-
-					return !Equals(_current, default(T));
+					var currentObject = _resultMapper.Map(_origionalType, currentResult);
+					_current = (T)_projection.DynamicInvoke(currentObject);
 				}
-			}
-			catch (Exception e)
-			{
+				else
+				{
+					_current = _resultMapper.Map<T>(currentResult);
+				}
+
+				return !Equals(_current, default(T));
 			}
 
 			return false;

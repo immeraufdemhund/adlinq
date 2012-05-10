@@ -57,7 +57,7 @@ namespace System.DirectoryServices.Linq
 			}
 		}
 
-		internal IResultMapper ResultMapper
+		public IResultMapper ResultMapper
 		{
 			get
 			{
@@ -70,7 +70,7 @@ namespace System.DirectoryServices.Linq
 			}
 		}
 
-		internal IQueryExecutor QueryExecutor
+		public IQueryExecutor QueryExecutor
 		{
 			get
 			{
@@ -83,7 +83,7 @@ namespace System.DirectoryServices.Linq
 			}
 		}
 
-		internal IQueryProvider QueryProvider
+		public IQueryProvider QueryProvider
 		{
 			get
 			{
@@ -96,7 +96,7 @@ namespace System.DirectoryServices.Linq
 			}
 		}
 
-		internal IQueryTranslator Translator
+		public IQueryTranslator Translator
 		{
 			get
 			{
@@ -115,12 +115,12 @@ namespace System.DirectoryServices.Linq
 
 		#region Methods
 
-		internal static string GetLdapConnectionString()
+		public static string GetLdapConnectionString()
 		{
 			using (var adRoot = new DirectoryEntry("LDAP://RootDSE"))
 			{
-				string dnc = adRoot.Properties["defaultNamingContext"][0].ToString();
-				string server = adRoot.Properties["dnsHostName"][0].ToString();
+				var dnc = Convert.ToString(adRoot.Properties["defaultNamingContext"][0]);
+				var server = Convert.ToString(adRoot.Properties["dnsHostName"][0]);
 				return string.Format("LDAP://{0}/{1}", server, dnc);
 			}
 		}

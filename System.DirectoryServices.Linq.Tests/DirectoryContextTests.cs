@@ -1,5 +1,6 @@
 ﻿using System.DirectoryServices.Linq.Tests.Mocks;
 using System.Linq;
+using System.Linq.Expressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace System.DirectoryServices.Linq.Tests
@@ -41,6 +42,18 @@ namespace System.DirectoryServices.Linq.Tests
 			using (var context = new DirectoryContextMock())
 			{
 				Assert.IsNotNull(context.ConnectionString);
+			}
+		}
+
+		[TestMethod]
+		public void GetQueryableTypeTest()
+		{
+			using (var context = new DirectoryContextMock())
+			{
+				//Expression<Func<User, bool>> users = u => true;
+				//Expression.Call();
+				//var queryable = context.QueryProvider.CreateQuery(users);
+				//Assert.AreEqual(queryable.ElementType, typeof(User));
 			}
 		}
 

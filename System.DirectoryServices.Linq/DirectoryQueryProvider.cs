@@ -22,6 +22,8 @@ namespace System.DirectoryServices.Linq
 		/// <param name="expression">An expression tree that represents a LINQ query.</param>
 		public override IQueryable CreateQuery(Expression expression)
 		{
+			Type type = GetQueryableType(expression);
+
 			return (IQueryable)Activator.CreateInstance(
 				typeof(EntryQuery<>).MakeGenericType(expression.Type),
 				new object[] { new EntryQueryState(Context, expression.Type, expression) }
@@ -66,6 +68,32 @@ namespace System.DirectoryServices.Linq
 			var queryState = new EntryQueryState(Context, typeof(TResult), expression);
 			var directoryExpression = queryState.GetSingleResultExpression();
 			return Context.QueryExecutor.Execute<TResult>(directoryExpression);
+		}
+
+		private static Type GetQueryableType(Expression expression)
+		{
+			var methodCall = expression as MethodCallExpression;
+
+			if (methodCall != null)
+			{
+				var constant = methodCall.Arguments[0] as ConstantExpression;
+
+				if (constant != null && constant.Value != null && typeof(IQueryable).IsAssignableFrom(constant.Type))
+				{
+					return ((IQueryable)constant.Value).ElementType;
+				}
+
+				return GetQueryableType(methodCall.Arguments[0]);
+			}
+
+			Type type = expression.Type;
+
+			if (type.IsGenericType && typeof(IQueryable<>).IsAssignableFrom(type.GetGenericTypeDefinition()))
+			{
+				return type.GetGenericArguments()[0];
+			}
+
+			return type;
 		}
 	}
 }

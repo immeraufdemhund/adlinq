@@ -10,13 +10,14 @@ namespace System.DirectoryServices.Linq.Expressions
 	{
 		#region Fields
 
+		private readonly Expression _expression;
+		private readonly List<WhereExpression> _whereClause;
+
 		private Type _origionalType;
-		private Expression _expression;
 		private SelectExpression _select;
 		private SkipTakeExpression _skip;
 		private SkipTakeExpression _take;
 		private OrderByExpression _orderBy;
-		private List<WhereExpression> _whereClause;
 
 		#endregion
 
