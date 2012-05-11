@@ -20,10 +20,7 @@ namespace System.DirectoryServices.Linq.EntryObjects
 
 		#region Constructors
 
-		public EntryObject()
-		{
 
-		}
 
 		#endregion
 
@@ -42,7 +39,7 @@ namespace System.DirectoryServices.Linq.EntryObjects
 			}
 		}
 
-		public Type ElementType
+		internal Type ElementType
 		{
 			get
 			{

@@ -23,10 +23,9 @@ namespace System.DirectoryServices.Linq
 		public override IQueryable CreateQuery(Expression expression)
 		{
 			Type type = GetQueryableType(expression);
-
 			return (IQueryable)Activator.CreateInstance(
-				typeof(EntryQuery<>).MakeGenericType(expression.Type),
-				new object[] { new EntryQueryState(Context, expression.Type, expression) }
+				typeof(EntryQuery<>).MakeGenericType(type),
+				new [] { new EntryQueryState(Context, expression) }
 			);
 		}
 
