@@ -6,8 +6,10 @@ namespace System.DirectoryServices.Linq.EntryObjects
 	{
 	}
 
-	public interface IEntrySet<T> : IEntrySet, IQueryable<T>, IOrderedQueryable<T>
+	public interface IEntrySet<T> : IEntrySet, IQueryable<T>, IOrderedQueryable<T> where T : class
 	{
 		EntryQuery<T> CreateQuery();
+		void AddEntry(string samAccountName, T entry);
+		void DeleteEntry(T entry);
 	}
 }

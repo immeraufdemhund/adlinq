@@ -39,31 +39,32 @@ namespace System.DirectoryServices.Linq.Tests.Mocks
 		}
 	}
 
-	[DirectoryType("user")]
-	public class User : EntryObject
+	[DirectoryType("User", "OU=ExternalUsers")]
+	public class User : UserEntryObject
 	{
-		private Guid _id;
+		//private Guid _id;
 		private string _email;
 		private string _userName;
 		private string _firstName;
 		private string _lastName;
+		//private int _userAccountControl;
 
-		[DirectoryProperty("objectguid")]
-		public Guid Id
-		{
-			get
-			{
-				return _id;
-			}
-			set
-			{
-				if (_id != value)
-				{
-					_id = value;
-					NotifyPropertyChanged("Id");
-				}
-			}
-		}
+		//[DirectoryProperty("objectguid")]
+		//public Guid Id
+		//{
+		//    get
+		//    {
+		//        return _id;
+		//    }
+		//    set
+		//    {
+		//        if (_id != value)
+		//        {
+		//            _id = value;
+		//            NotifyPropertyChanged("Id");
+		//        }
+		//    }
+		//}
 
 		[DirectoryProperty("samaccountname")]
 		public string UserName
@@ -133,7 +134,24 @@ namespace System.DirectoryServices.Linq.Tests.Mocks
 			}
 		}
 
-		[DirectoryProperty("memberof", IsReferenceCollection = true)]
+		//[DirectoryProperty("userAccountControl")]
+		//public int UserAccountControl
+		//{
+		//    get
+		//    {
+		//        return _userAccountControl;
+		//    }
+		//    set
+		//    {
+		//        if (_userAccountControl != value)
+		//        {
+		//            _userAccountControl = value;
+		//            NotifyPropertyChanged("UserAccountControl");
+		//        }
+		//    }
+		//}
+
+		[EntryCollectionProperty("member", IsReferenceCollection = true)]
 		public EntryCollection<Group> Groups
 		{
 		    get

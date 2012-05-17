@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.DirectoryServices.Linq.EntryObjects;
 
 namespace System.DirectoryServices.Linq.Tests
 {
@@ -106,7 +107,6 @@ namespace System.DirectoryServices.Linq.Tests
 
 				Assert.IsNotNull(single);
 				Assert.AreEqual(single.UserName, "sbaker");
-				Assert.AreNotEqual(single.Id, Guid.Empty);
 			}
 		}
 
@@ -195,17 +195,23 @@ namespace System.DirectoryServices.Linq.Tests
 		}
 
 		[TestMethod]
-		public void WhereUserSubmitChangesTest()
+		public void AddAndDeleteNewUserSubmitChangesTest()
 		{
 			using (var context = new DirectoryContextMock())
 			{
-				var single = context.Users.Where(u => u.Email == "sbaker@logikbug.com").FirstOrDefault();
+				//var single1 = context.Users.Single(u => u.UserName == "jsmith");
+				var single = new User();
+				single.UserName = "ssmith";
+				single.FirstName = "Steve";
+				single.LastName = "Baker";
+				single.Email = "sbaker@test.com";
+				context.AddObject(single);
+				single.SetPassword("Wh@7Wh@7");
+				context.SubmitChanges();
 
-				//single = new User();
-				//context.ChangeTracker.TrackChanges(single);
-				//single.Email = "my.email@test.com";
-
-				//context.SubmitChanges();
+				var single1 = context.Users.Single(u => u.UserName == "ssmith");
+				context.DeleteObject(single1);
+				context.SubmitChanges();
 			}
 		}
 

@@ -64,7 +64,7 @@ namespace System.DirectoryServices.Linq
 			if (_resultEnumerator.MoveNext())
 			{
 				// TODO Parse first/next result.
-				//_current = Activator.CreateInstance<T>();
+				_current = null;
 
 				return true;
 			}

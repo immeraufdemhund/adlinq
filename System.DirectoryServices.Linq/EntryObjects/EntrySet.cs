@@ -7,10 +7,16 @@ namespace System.DirectoryServices.Linq.EntryObjects
 {
 	public abstract class EntrySet : IEntrySet
 	{
+		#region Constructors
+
 		internal EntrySet(DirectoryContext context)
 		{
 			Context = context;
 		}
+
+		#endregion
+
+		#region Properties
 
 		protected DirectoryContext Context { get; private set; }
 
@@ -38,6 +44,10 @@ namespace System.DirectoryServices.Linq.EntryObjects
 			}
 		}
 
+		#endregion
+
+		#region Methods
+
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return GetEnumeratorCore();
@@ -53,13 +63,21 @@ namespace System.DirectoryServices.Linq.EntryObjects
 		protected abstract Expression GetExpression();
 
 		protected abstract IEnumerator GetEnumeratorCore();
+
+		#endregion
 	}
 
-	public class EntrySet<T> : EntrySet, IEntrySet<T>
+	public class EntrySet<T> : EntrySet, IEntrySet<T> where T : class
 	{
+		#region Constructors
+
 		public EntrySet(DirectoryContext context) : base(context)
 		{
 		}
+
+		#endregion
+
+		#region Methods
 
 		protected override Type GetElementType()
 		{
@@ -95,5 +113,27 @@ namespace System.DirectoryServices.Linq.EntryObjects
 		{
 			return CreateQuery().GetEnumerator();
 		}
+
+		public void AddEntry(string samAccountName, T entry)
+		{
+			var entryObject = entry as EntryObject;
+
+			if (entryObject != null)
+			{
+				Context.AddObject(samAccountName, entryObject);
+			}
+		}
+
+		public void DeleteEntry(T entry)
+		{
+			var entryObject = entry as EntryObject;
+
+			if (entryObject != null)
+			{
+				Context.DeleteObject(entryObject);
+			}
+		}
+
+		#endregion
 	}
 }

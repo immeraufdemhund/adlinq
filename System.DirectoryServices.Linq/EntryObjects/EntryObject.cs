@@ -1,8 +1,9 @@
 ﻿using System.ComponentModel;
+using System.DirectoryServices.Linq.Attributes;
 
 namespace System.DirectoryServices.Linq.EntryObjects
 {
-	public abstract class EntryObject : IEntryWithRelationships, INotifyPropertyChanged
+	public abstract class EntryObject : DisposableObject, IEntryWithRelationships, INotifyPropertyChanged
 	{
 		#region Events
 
@@ -51,11 +52,66 @@ namespace System.DirectoryServices.Linq.EntryObjects
 
 		internal DirectoryEntry Entry { get; set; }
 
+		internal ChangeState ChangeState { get; set; }
+
 		internal DirectoryContext Context { get; set; }
 
 		#endregion
 
 		#region Methods
+
+		internal string GetCnValue()
+		{
+			string givenName = null;
+			string surName = null;
+
+			foreach (var property in ElementType.GetProperties())
+			{
+				var attr = property.GetAttribute<DirectoryPropertyAttribute>();
+
+				if (attr == null)
+				{
+					continue;
+				}
+
+				switch ((attr.Name ?? string.Empty).ToLower())
+				{
+					case "cn":
+					{
+						return Convert.ToString(property.GetValue(this, null));
+					}
+					case "givenname":
+					{
+						givenName = Convert.ToString(property.GetValue(this, null));
+						break;
+					}
+					case "sn":
+					{
+						surName = Convert.ToString(property.GetValue(this, null));
+						break;
+					}
+					default:
+					{
+						continue;
+					}
+				}
+
+				if (!string.IsNullOrEmpty(givenName) && !string.IsNullOrEmpty(surName))
+				{
+					break;
+				}
+			}
+
+			return string.Concat(givenName, " ", surName);
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing && Entry != null)
+			{
+				Entry.Dispose();
+			}
+		}
 
 		protected virtual IRelationshipManager GetRelationshipManager()
 		{

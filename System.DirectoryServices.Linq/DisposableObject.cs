@@ -16,9 +16,9 @@
 
 		#region Properties
 
-		public bool IsDisposed { get; private set; }
+		internal bool IsDisposed { get; private set; }
 
-		public bool IsDisposing { get; private set; }
+		internal bool IsDisposing { get; private set; }
 
 		#endregion
 

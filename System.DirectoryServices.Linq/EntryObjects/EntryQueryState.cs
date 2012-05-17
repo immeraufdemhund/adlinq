@@ -5,7 +5,6 @@ namespace System.DirectoryServices.Linq.EntryObjects
 {
 	public class EntryQueryState
 	{
-		private DirectoryExpression _expression;
 		private DirectoryExpressionVisitor _visitor;
 
 		public EntryQueryState(DirectoryContext context, Expression expression)

@@ -26,24 +26,62 @@ namespace System.DirectoryServices.Linq.ChangeTracking
 
 		#endregion
 
-		#region Methods
+        #region Methods
+
+        private static string GetAttributeName(MemberInfo info)
+        {
+            var attribute = info.GetAttribute<DirectoryPropertyAttribute>();
+
+            if (attribute != null && !string.IsNullOrEmpty(attribute.Name) && !attribute.IsReference && !attribute.IsReferenceCollection)
+            {
+                return attribute.Name;
+            }
+
+            return null;
+        }
 
 		private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			var entryObject = (EntryObject)sender;
+			var entryObject = sender as EntryObject;
 
-			if (!Changes.ContainsKey(entryObject))
+			if (entryObject != null)
 			{
-				Changes.Add(entryObject, new List<string>());
-			}
+				var properties = GetPropertyList(entryObject);
 
-			var properties = Changes[entryObject];
-
-			if (!properties.Contains(e.PropertyName))
-			{
-				properties.Add(e.PropertyName);
+				if (!properties.Contains(e.PropertyName))
+				{
+					properties.Add(e.PropertyName);
+				}
 			}
 		}
+
+        private List<string> GetPropertyList(EntryObject entryObject)
+        {
+            if (!Changes.ContainsKey(entryObject))
+            {
+                Changes.Add(entryObject, new List<string>());
+            }
+
+            return Changes[entryObject];
+        }
+
+        private List<string> GetAllPropertyNames(EntryObject entryObject)
+        {
+            var type = entryObject.GetType();
+            var propertyNames = new List<string>();
+
+            foreach (var item in type.GetProperties())
+            {
+                if (string.IsNullOrEmpty(GetAttributeName(item)))
+	            {
+                    continue;
+	            }
+
+                propertyNames.Add(item.Name);
+            }
+
+            return propertyNames;
+        }
 
 		public void TrackChanges<T>(T entryObject) where T : EntryObject
 		{
@@ -53,37 +91,97 @@ namespace System.DirectoryServices.Linq.ChangeTracking
 			}
 		}
 
-		public void SubmitChanges()
+        public void AddObject<T>(T entryObject) where T : EntryObject
+        {
+            if (!Equals(entryObject, default(T)))
+            {
+                TrackChanges(entryObject);
+                var properties = GetPropertyList(entryObject);
+                properties.AddRange(GetAllPropertyNames(entryObject));
+
+				if (entryObject.Entry != null)
+				{
+					entryObject.Entry.CommitChanges();
+				}
+            }
+        }
+
+		public void DeleteObject<T>(T entryObject) where T : EntryObject
+		{
+			var properties = GetPropertyList(entryObject);
+
+			if (properties.Count > 0)
+			{
+				properties.Clear();
+			}
+		}
+
+		public virtual void SubmitChanges()
 		{
 			foreach (var item in Changes)
 			{
 				var entry = item.Key;
-				var values = item.Value;
-				var entryType = entry.GetType();
 
-				foreach (var propertyName in values)
+				if (entry.ChangeState == ChangeState.Insert)
 				{
-					var property = entryType.GetProperty(propertyName);
-					var attributeName = GetAttributeName(property);
-					entry.Entry.Properties[attributeName].Value = property.GetValue(entry, null);
+					entry.Entry.RefreshCache();
+					entry.ChangeState = ChangeState.Update;
 				}
 
-				entry.Entry.CommitChanges();
+				if (entry.ChangeState == ChangeState.Update)
+				{
+					if (UpdateEntry(entry, item.Value))
+					{
+						entry.Entry.CommitChanges();
+					}
+				}
+				else if (entry.ChangeState == ChangeState.Delete)
+				{
+					entry.Entry.DeleteTree();
+				}
+			}
+
+			Changes.Clear();
+		}
+
+		private static bool UpdateEntry(EntryObject entry, List<string> properties)
+		{
+			try
+			{
+				var entryType = entry.GetType();
+
+				foreach (var name in properties)
+				{
+					var property = entryType.GetProperty(name);
+					var value = GetPropertyValue(entry, property);
+
+					if (value != null)
+					{
+						var attributeName = GetAttributeName(property);
+						entry.Entry.Properties[attributeName].Value = value;
+					}
+				}
+
+				return true;
+			}
+			catch (Exception e)
+			{
+				return false;
 			}
 		}
 
-		private static string GetAttributeName(MemberInfo info)
+		private static object GetPropertyValue(EntryObject entry, PropertyInfo property)
 		{
-			var attribute = info.GetAttribute<DirectoryPropertyAttribute>();
+			var value = property.GetValue(entry, null);
 
-			if (attribute != null && !string.IsNullOrEmpty(attribute.Name) && !attribute.IsReference && !attribute.IsReferenceCollection)
+			if (value is Guid)
 			{
-				return attribute.Name;
+				return ((Guid)value).ToByteArray();
 			}
 
-			return info.Name;
+			return value;
 		}
 
 		#endregion
-	}
+    }
 }

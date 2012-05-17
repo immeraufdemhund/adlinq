@@ -47,7 +47,7 @@ namespace System.DirectoryServices.Linq
 			catch (Exception ex)
 			{
 				// TODO: Find reason of failure and rethrow valid exception.
-				//throw;
+				//throw ex;
 				return null;
 			}
 
@@ -90,7 +90,7 @@ namespace System.DirectoryServices.Linq
 					return results.LastOrDefault();
 				}
 
-				return results.First();
+				return results.FirstOrDefault();
 			}
 
 			return results.FirstOrDefault();

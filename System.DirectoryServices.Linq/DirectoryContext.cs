@@ -1,6 +1,7 @@
 ﻿using System.DirectoryServices.Linq.ChangeTracking;
 using System.DirectoryServices.Linq.EntryObjects;
 using System.Linq;
+using System.DirectoryServices.Linq.Attributes;
 
 namespace System.DirectoryServices.Linq
 {
@@ -18,16 +19,19 @@ namespace System.DirectoryServices.Linq
 
 		#region Constructors
 
-		public DirectoryContext() : this(GetLdapConnectionString())
+		public DirectoryContext()
+			: this(GetLdapConnectionString())
 		{
 		}
 
-		public DirectoryContext(string connectionString) : this(new DirectoryEntry(connectionString))
+		public DirectoryContext(string connectionString)
+			: this(new DirectoryEntry(connectionString))
 		{
 			ConnectionString = connectionString;
 		}
 
-		public DirectoryContext(string connectionString, string userName, string password) : this(new DirectoryEntry(connectionString, userName, password))
+		public DirectoryContext(string connectionString, string userName, string password)
+			: this(new DirectoryEntry(connectionString, userName, password))
 		{
 			ConnectionString = connectionString;
 		}
@@ -115,6 +119,11 @@ namespace System.DirectoryServices.Linq
 
 		#region Methods
 
+		private DirectoryEntry GetParentDirectoryEntry(DirectoryTypeAttribute directoryType)
+		{
+			return DomainEntry.Children.Find(directoryType.SchemaName);
+		}
+
 		public static string GetLdapConnectionString()
 		{
 			using (var adRoot = new DirectoryEntry("LDAP://RootDSE"))
@@ -156,6 +165,29 @@ namespace System.DirectoryServices.Linq
 		public IEntrySet<T> CreateEntrySet<T>() where T : class
 		{
 			return new EntrySet<T>(this);
+		}
+
+		public void AddObject<T>(T entry) where T : EntryObject
+		{
+			AddObject(entry.GetCnValue(), entry);
+		}
+
+		public void AddObject<T>(string cnName, T entry) where T : EntryObject
+		{
+			if (!string.IsNullOrEmpty(cnName) && entry != null)
+			{
+				var entryType = entry.GetType();
+				var schemaName = entryType.AssertGetAttribute<DirectoryTypeAttribute>();
+				var parentEntry = GetParentDirectoryEntry(schemaName);
+				entry.Entry = parentEntry.Children.Add(string.Concat("CN=", cnName), schemaName.Name);
+				ChangeTracker.AddObject(entry);
+			}
+		}
+
+		public void DeleteObject<T>(T entry) where T : EntryObject
+		{
+			entry.ChangeState = ChangeState.Delete;
+			ChangeTracker.DeleteObject(entry);
 		}
 
 		public void SubmitChanges()
