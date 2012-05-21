@@ -28,16 +28,9 @@ namespace System.DirectoryServices.Linq.ChangeTracking
 
         #region Methods
 
-        private static string GetAttributeName(MemberInfo info)
+		private static DirectoryPropertyAttribute GetAttribute(MemberInfo info)
         {
-            var attribute = info.GetAttribute<DirectoryPropertyAttribute>();
-
-            if (attribute != null && !string.IsNullOrEmpty(attribute.Name) && !attribute.IsReference && !attribute.IsReferenceCollection)
-            {
-                return attribute.Name;
-            }
-
-            return null;
+            return info.GetAttribute<DirectoryPropertyAttribute>();
         }
 
 		private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -46,11 +39,21 @@ namespace System.DirectoryServices.Linq.ChangeTracking
 
 			if (entryObject != null)
 			{
-				var properties = GetPropertyList(entryObject);
+				var property = entryObject.GetType().GetProperty(e.PropertyName);
 
-				if (!properties.Contains(e.PropertyName))
+				if (property != null)
 				{
-					properties.Add(e.PropertyName);
+					var attribute = GetAttribute(property);
+
+					if (attribute != null && !attribute.IsReadOnly)
+					{
+						var properties = GetPropertyList(entryObject);
+
+						if (!properties.Contains(e.PropertyName))
+						{
+							properties.Add(e.PropertyName);
+						}
+					}
 				}
 			}
 		}
@@ -72,7 +75,9 @@ namespace System.DirectoryServices.Linq.ChangeTracking
 
             foreach (var item in type.GetProperties())
             {
-                if (string.IsNullOrEmpty(GetAttributeName(item)))
+				var attribute = GetAttribute(item);
+
+                if (attribute == null || string.IsNullOrEmpty(attribute.Name) || attribute.IsReadOnly)
 	            {
                     continue;
 	            }
@@ -157,8 +162,14 @@ namespace System.DirectoryServices.Linq.ChangeTracking
 
 					if (value != null)
 					{
-						var attributeName = GetAttributeName(property);
-						entry.Entry.Properties[attributeName].Value = value;
+						var attribute = GetAttribute(property);
+
+						if (attribute == null || attribute.IsReadOnly)
+						{
+							continue;
+						}
+
+						entry.Entry.Properties[attribute.Name].Value = value;
 					}
 				}
 

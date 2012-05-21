@@ -199,9 +199,8 @@ namespace System.DirectoryServices.Linq.Tests
 		{
 			using (var context = new DirectoryContextMock())
 			{
-				//var single1 = context.Users.Single(u => u.UserName == "jsmith");
 				var single = new User();
-				single.UserName = "ssmith";
+				single.UserName = "sbaker";
 				single.FirstName = "Steve";
 				single.LastName = "Baker";
 				single.Email = "sbaker@test.com";
@@ -209,9 +208,11 @@ namespace System.DirectoryServices.Linq.Tests
 				single.SetPassword("Wh@7Wh@7");
 				context.SubmitChanges();
 
-				var single1 = context.Users.Single(u => u.UserName == "ssmith");
+				var single1 = context.Users.Single(u => u.UserName == "sbaker");
 				context.DeleteObject(single1);
 				context.SubmitChanges();
+				var single2 = context.Users.SingleOrDefault(u => u.UserName == "sbaker");
+				Assert.IsNull(single2);
 			}
 		}
 
