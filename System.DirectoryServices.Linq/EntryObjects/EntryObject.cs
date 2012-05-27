@@ -96,7 +96,7 @@ namespace System.DirectoryServices.Linq.EntryObjects
 					}
 				}
 
-				if (!string.IsNullOrEmpty(givenName) && !string.IsNullOrEmpty(surName))
+				if (givenName != null && surName != null)
 				{
 					break;
 				}

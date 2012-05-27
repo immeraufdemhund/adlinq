@@ -1,8 +1,6 @@
 ﻿using System.DirectoryServices.Linq.Tests.Mocks;
 using System.Linq;
-using System.Linq.Expressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.DirectoryServices.Linq.EntryObjects;
 
 namespace System.DirectoryServices.Linq.Tests
 {
@@ -199,13 +197,15 @@ namespace System.DirectoryServices.Linq.Tests
 		{
 			using (var context = new DirectoryContextMock())
 			{
-				var single = new User();
-				single.UserName = "sbaker";
-				single.FirstName = "Steve";
-				single.LastName = "Baker";
-				single.Email = "sbaker@test.com";
+				var single = new User
+				{
+				    UserName = "sbaker",
+					FirstName = "Steve",
+					LastName = "Baker",
+					Email = "sbaker@test.com"
+				};
 				context.AddObject(single);
-				single.SetPassword("Wh@7Wh@7");
+				single.SetPassword("1234!@#$");
 				context.SubmitChanges();
 
 				var single1 = context.Users.Single(u => u.UserName == "sbaker");
