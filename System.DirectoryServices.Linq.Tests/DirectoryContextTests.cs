@@ -12,9 +12,6 @@ namespace System.DirectoryServices.Linq.Tests
 	{
 		public DirectoryContextTests()
 		{
-			//
-			// TODO: Add constructor logic here
-			//
 		}
 
 		private TestContext testContextInstance;
