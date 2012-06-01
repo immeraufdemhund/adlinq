@@ -264,9 +264,19 @@ namespace System.DirectoryServices.Linq
 			{
 				valueExpression = binary.Right;
 			}
-			
+
 			var value = Expression.Lambda(valueExpression).Compile().DynamicInvoke();
-			builder.AddAttribute(GetName(memberExpression.Member), filterOperator, value);
+			builder.AddAttribute(GetName(memberExpression.Member), filterOperator, EscapeCharacters(value));
+		}
+
+		private static object EscapeCharacters(object value)
+		{
+			if (value != null && value is string)
+			{
+				return Convert.ToString(value).Replace("(", "0x28").Replace(")", "0x29").Replace("\\", "0x5c");
+			}
+
+			return value;
 		}
 
 		private static MemberExpression GetMemberAccessExpression(AttributeBuilder builder, Expression expression)
