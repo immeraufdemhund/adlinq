@@ -9,7 +9,7 @@ namespace System.DirectoryServices.Linq.EntryObjects
 	{
 		private readonly EntryQueryState _queryState;
 
-		internal EntryQuery(EntryQueryState queryState)
+		internal protected EntryQuery(EntryQueryState queryState)
 		{
 			_queryState = queryState;
 		}

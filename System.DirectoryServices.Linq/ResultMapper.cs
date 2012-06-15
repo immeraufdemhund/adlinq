@@ -98,6 +98,11 @@ namespace System.DirectoryServices.Linq
 						return new Guid((byte[])value);
 					}
 
+					if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+					{
+						return Activator.CreateInstance(propertyType, value);// new[] { value });
+					}
+
 					return Convert.ChangeType(value, propertyType);
 				}
 			}

@@ -96,7 +96,7 @@ namespace System.DirectoryServices.Linq.EntryObjects
 					}
 				}
 
-				if (givenName != null && surName != null)
+				if (!string.IsNullOrEmpty(givenName) && !string.IsNullOrEmpty(surName))
 				{
 					break;
 				}
@@ -124,6 +124,55 @@ namespace System.DirectoryServices.Linq.EntryObjects
 			{
 				PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
 			}
+		}
+
+		public void AddToAttribute(string attribute, object value)
+		{
+			if (!string.IsNullOrEmpty(attribute))
+			{
+				Entry.Properties[attribute].Add(value);
+			}
+		}
+
+		public void AddToAttribute(string attribute, params object[] values)
+		{
+			if (!string.IsNullOrEmpty(attribute) && values.Length > 0)
+			{
+				Entry.Properties[attribute].AddRange(values);
+			}
+		}
+
+		public void SetAttribute(string attribute, object value)
+		{
+			if (!string.IsNullOrEmpty(attribute))
+			{
+				Entry.Properties[attribute].Value = value;
+			}
+		}
+
+		public void SetAttribute(string attribute, params object[] values)
+		{
+			if (!string.IsNullOrEmpty(attribute))
+			{
+				var property = Entry.Properties[attribute];
+
+				if (property.Count > 0)
+				{
+					property.Clear();
+				}
+
+				property.AddRange(values);
+			}
+		}
+
+		public T GetAttribute<T>(string attribute)
+		{
+			if (Entry.Properties.Contains(attribute))
+			{
+				return (T)Entry.Properties[attribute].Value;
+			}
+
+			return default(T);
 		}
 
 		public DateTime ParseDateTime(string attribute)

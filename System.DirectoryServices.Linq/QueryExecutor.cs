@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.DirectoryServices.Linq.Attributes;
 using System.DirectoryServices.Linq.Expressions;
 using System.Reflection;
-using System.DirectoryServices.Linq.Attributes;
 
 namespace System.DirectoryServices.Linq
 {
@@ -53,6 +53,11 @@ namespace System.DirectoryServices.Linq
 				return Translator.TranslateOne(expression, searcher);
 			}
 		}
+
+		//public IEnumerable<T> ExecuteCommand<T>(string query)
+		//{
+
+		//}
 
 		public IEnumerator<T> ExecuteQuery<T>(string query)
 		{
@@ -107,7 +112,7 @@ namespace System.DirectoryServices.Linq
 		{
 			var attribute = info.GetAttribute<DirectoryPropertyAttribute>();
 
-			if (attribute != null && !string.IsNullOrEmpty(attribute.Name) && !attribute.IsReference && !attribute.IsReferenceCollection)
+			if (attribute != null && !string.IsNullOrEmpty(attribute.Name))// && !attribute.IsReference && !attribute.IsReferenceCollection)
 			{
 				return attribute.Name;
 			}

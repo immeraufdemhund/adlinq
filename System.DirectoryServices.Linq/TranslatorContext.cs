@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.DirectoryServices.Linq.Expressions;
 using System.Linq;
 
@@ -11,7 +10,6 @@ namespace System.DirectoryServices.Linq
 
 		public TranslatorContext(DirectorySearcher directorySearcher)
 		{
-			//ElementType = elementType;
 			DirectorySearcher = directorySearcher;
 		}
 
@@ -19,14 +17,11 @@ namespace System.DirectoryServices.Linq
 		{
 			Expression = expression;
 			DirectorySearcher = directorySearcher;
-			//ElementType = expression.GetOrigionalType();
 		}
 
 		#endregion
 
 		#region Properties
-
-		//public Type ElementType { get; private set; }
 
 		public DirectoryExpression Expression { get; private set; }
 
@@ -38,33 +33,13 @@ namespace System.DirectoryServices.Linq
 
 		public SearchResult FindOne()
 		{
-			SearchResults results;
-
-			try
-			{
-				results = GetAllSearchResults();
-			}
-			catch (Exception ex)
-			{
-				// TODO: Find reason of failure and rethrow valid exception.
-				//throw ex;
-				return null;
-			}
-
+			var results = GetAllSearchResults();
 			return GetSingleSearchResult(results);
 		}
 
 		public IEnumerable<SearchResult> FindAll()
 		{
-			try
-			{
-				return GetAllSearchResults();
-			}
-			catch (Exception)
-			{
-				// TODO Throw origional exception, but verify why it threw.
-				return Enumerable.Empty<SearchResult>();
-			}
+			return GetAllSearchResults();
 		}
 
 		private SearchResult GetSingleSearchResult(SearchResults results)

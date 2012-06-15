@@ -283,12 +283,21 @@ namespace System.DirectoryServices.Linq
 		{
 			if (expression.NodeType.Is(ExpressionType.MemberAccess))
 			{
-				MemberExpression memberExpression = (MemberExpression)expression;
+				// Commented out by Stephen for the purpose of an anonomous object in the query.
+				// Example:
+				// var query = new { Cn = string.Empty };
+				// Users.Where(u => query.Cn == "My Name");
 
-				if (memberExpression.Member.DeclaringType == builder.Parent.GetObjectClassType())
-				{
-					return memberExpression;
-				}
+				//MemberExpression memberExpression = (MemberExpression)expression;
+
+				//if (memberExpression.Member.DeclaringType == builder.Parent.GetObjectClassType())
+				//{
+				//    return memberExpression;
+				//}
+
+				// End comment by Stephen
+
+				return (MemberExpression)expression;
 			}
 
 			return null;

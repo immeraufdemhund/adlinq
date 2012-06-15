@@ -5,24 +5,12 @@ namespace System.DirectoryServices.Linq.Tests.Mocks
 {
 	public class DirectoryContextMock : DirectoryContext
 	{
+		private IEntrySet<User> _users;
+		private IEntrySet<Group> _groups;
+
 		public DirectoryContextMock() : base(string.Empty)
 		{
 
-		}
-
-		private IEntrySet<User> _users;
-
-		public IEntrySet<User> Groups
-		{
-			get
-			{
-				if (_users == null)
-				{
-					_users = CreateEntrySet<User>();
-				}
-
-				return _users;
-			}
 		}
 
 		public IEntrySet<User> Users
@@ -37,6 +25,19 @@ namespace System.DirectoryServices.Linq.Tests.Mocks
 				return _users;
 			}
 		}
+
+		public IEntrySet<Group> Groups
+		{
+			get
+			{
+				if (_groups == null)
+				{
+					_groups = CreateEntrySet<Group>();
+				}
+
+				return _groups;
+			}
+		}
 	}
 
 	[DirectoryType("User", "OU=ExternalUsers")]
@@ -47,7 +48,7 @@ namespace System.DirectoryServices.Linq.Tests.Mocks
 		private string _userName;
 		private string _firstName;
 		private string _lastName;
-		//private int _userAccountControl;
+		private DateTime? _whenChanged;
 
 		[DirectoryProperty("objectguid", true)]
 		public Guid Id
@@ -63,6 +64,19 @@ namespace System.DirectoryServices.Linq.Tests.Mocks
 					_id = value;
 					NotifyPropertyChanged("Id");
 				}
+			}
+		}
+
+		[DirectoryProperty("whenchanged", true)]
+		public DateTime? LastModifiedDate
+		{
+			get
+			{
+				return _whenChanged;
+			}
+			set
+			{
+				_whenChanged = value;
 			}
 		}
 
@@ -151,13 +165,13 @@ namespace System.DirectoryServices.Linq.Tests.Mocks
 		//    }
 		//}
 
-		[EntryCollectionProperty("member", IsReferenceCollection = true)]
+		[EntryCollectionProperty("member")]
 		public EntryCollection<Group> Groups
 		{
-		    get
-		    {
-		        return ((IEntryWithRelationships)this).RelationshipManager.GetEntryCollection<Group>("Groups");
-		    }
+			get
+			{
+				return ((IEntryWithRelationships)this).RelationshipManager.GetEntryCollection<Group>("Groups");
+			}
 		}
 	}
 

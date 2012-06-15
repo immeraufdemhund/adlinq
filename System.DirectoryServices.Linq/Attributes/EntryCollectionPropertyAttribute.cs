@@ -30,22 +30,26 @@ namespace System.DirectoryServices.Linq.Attributes
 		{
 			get
 			{
-				if (MatchingRule == MatchingRuleType.BitAnd)
+				switch (MatchingRule)
 				{
-					return MatchingRuleBitAnd;
+					case MatchingRuleType.BitAnd:
+					{
+						return MatchingRuleBitAnd;
+					}
+					case MatchingRuleType.BitOr:
+					{
+						return MatchingRuleBitOr;
+					}
+					case MatchingRuleType.InChain:
+					{
+						return MatchingRuleInChain;
+					}
+					case MatchingRuleType.None:
+					default:
+					{
+						return string.Empty;
+					}
 				}
-
-				if (MatchingRule == MatchingRuleType.BitOr)
-				{
-					return MatchingRuleBitOr;
-				}
-
-				if (MatchingRule == MatchingRuleType.InChain)
-				{
-					return MatchingRuleInChain;
-				}
-
-				return string.Empty;
 			}
 		}
 	}

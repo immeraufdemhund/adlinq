@@ -1,7 +1,7 @@
-﻿using System.DirectoryServices.Linq.ChangeTracking;
+﻿using System.DirectoryServices.Linq.Attributes;
+using System.DirectoryServices.Linq.ChangeTracking;
 using System.DirectoryServices.Linq.EntryObjects;
 using System.Linq;
-using System.DirectoryServices.Linq.Attributes;
 
 namespace System.DirectoryServices.Linq
 {
@@ -161,6 +161,11 @@ namespace System.DirectoryServices.Linq
 		{
 			return new QueryExecutor(this);
 		}
+
+		//public IEntrySet<T> ExecuteCommand<T>(string commandText)
+		//{
+		//    return QueryExecutor.ExecuteQuery<T>(commandText);
+		//}
 
 		public IEntrySet<T> CreateEntrySet<T>() where T : class
 		{

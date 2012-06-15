@@ -46,46 +46,48 @@ namespace System.DirectoryServices.Linq.EntryObjects
 
 		private void LoadCollection()
 		{
-			//_entryObject.Entry.RefreshCache(new string[] { "tokenGroups" });
+			//_entryObject.Entry.RefreshCache(new string[] { "tokenGroups" }); 
 
-			//for (int i = 0; i < _entryObject.Entry.Properties["tokenGroups"].Count; i++)
-			//{
-			//    SecurityIdentifier sid = new SecurityIdentifier((byte[])_entryObject.Entry.Properties["tokenGroups"][i], 0);
-			//    NTAccount nt = (NTAccount)sid.Translate(typeof(NTAccount));
-			//    System.Diagnostics.Debug.WriteLine(nt.Value);
-			//}
+			//for (int i = 0; i < _entryObject.Entry.Properties["tokenGroups"].Count; i++) 
+			//{ 
+			//    SecurityIdentifier sid = new SecurityIdentifier((byte[])_entryObject.Entry.Properties["tokenGroups"][i], 0); 
+			//    NTAccount nt = (NTAccount)sid.Translate(typeof(NTAccount)); 
+			//    System.Diagnostics.Debug.WriteLine(nt.Value); 
+			//} 
 
-			//var user = (ActiveDs.IADsUser)_entryObject.Entry.NativeObject;
-			//var groups = user.Groups();
+			//var user = (ActiveDs.IADsUser)_entryObject.Entry.NativeObject; 
+			//var groups = user.Groups(); 
 
-			//foreach (var group in (IEnumerable)groups)
-			//{
-			//    DirectoryEntry obGpEntry = new DirectoryEntry(group);
+			//foreach (var group in (IEnumerable)groups) 
+			//{ 
+			//    DirectoryEntry obGpEntry = new DirectoryEntry(group); 
 
-			//    System.Diagnostics.Debug.WriteLine("");
+			//    System.Diagnostics.Debug.WriteLine(""); 
 
-			//    foreach (PropertyValueCollection item in obGpEntry.Properties)
-			//    {
-			//        System.Diagnostics.Debug.WriteLine(item.Value);
-			//    }
+			//    foreach (PropertyValueCollection item in obGpEntry.Properties) 
+			//    { 
+			//        System.Diagnostics.Debug.WriteLine(item.Value); 
+			//    } 
 
-			//    Marshal.ReleaseComObject(group);
-			//}
+			//    Marshal.ReleaseComObject(group); 
+			//} 
 
-			//Marshal.ReleaseComObject(groups);
-			//Marshal.ReleaseComObject(user);
+			//Marshal.ReleaseComObject(groups); 
+			//Marshal.ReleaseComObject(user); 
 
 			var filter = CreateFilter(typeof(TEntry));
 			var queryExecutor = _entryObject.Context.QueryExecutor;
-			var enumerator = queryExecutor.ExecuteQuery<TEntry>(filter);
 
-			while (enumerator.MoveNext())
+			using (var enumerator = queryExecutor.ExecuteQuery<TEntry>(filter))
 			{
-				_items.Add(enumerator.Current);
+				while (enumerator.MoveNext())
+				{
+					_items.Add(enumerator.Current);
+				}
 			}
 
 			_isLoaded = true;
-		}
+		} 
 
 		private string CreateFilter(Type entryType)
 		{

@@ -11,6 +11,8 @@ namespace System.DirectoryServices.Linq
 		object Execute(string query, Type elementType);
 		object Execute(SingleResultExpression expression);
 
+		//IEnumerable<T> ExecuteCommand<T>(string query);
+
 		IEnumerator<T> ExecuteQuery<T>(string query);
 		IEnumerator<T> ExecuteQuery<T>(DirectoryExpression expression);
 	}
