@@ -131,6 +131,7 @@ namespace System.DirectoryServices.Linq.EntryObjects
 			if (!string.IsNullOrEmpty(attribute))
 			{
 				Entry.Properties[attribute].Add(value);
+				Context.ChangeTracker.SetEntryObjectChanged(this);
 			}
 		}
 
@@ -139,6 +140,7 @@ namespace System.DirectoryServices.Linq.EntryObjects
 			if (!string.IsNullOrEmpty(attribute) && values.Length > 0)
 			{
 				Entry.Properties[attribute].AddRange(values);
+				Context.ChangeTracker.SetEntryObjectChanged(this);
 			}
 		}
 
@@ -147,6 +149,7 @@ namespace System.DirectoryServices.Linq.EntryObjects
 			if (!string.IsNullOrEmpty(attribute))
 			{
 				Entry.Properties[attribute].Value = value;
+				Context.ChangeTracker.SetEntryObjectChanged(this);
 			}
 		}
 
@@ -162,6 +165,7 @@ namespace System.DirectoryServices.Linq.EntryObjects
 				}
 
 				property.AddRange(values);
+				Context.ChangeTracker.SetEntryObjectChanged(this);
 			}
 		}
 

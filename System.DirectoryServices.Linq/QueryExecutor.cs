@@ -91,13 +91,13 @@ namespace System.DirectoryServices.Linq
 			};
 		}
 
-		private static string[] GetPropertiesFromType(Type type)
+		private string[] GetPropertiesFromType(Type type)
 		{
 			var list = new List<string>();
 
 			foreach (var property in type.GetProperties())
 			{
-				var attributeName = GetAttributeName(property);
+				var attributeName = GetAttributeName<DirectoryPropertyAttribute>(property);
 
 				if (!string.IsNullOrEmpty(attributeName))
 				{
@@ -108,11 +108,11 @@ namespace System.DirectoryServices.Linq
 			return list.ToArray();
 		}
 
-		private static string GetAttributeName(MemberInfo info)
+		public string GetAttributeName<TAttribute>(MemberInfo info) where TAttribute : DirectoryAttribute
 		{
-			var attribute = info.GetAttribute<DirectoryPropertyAttribute>();
+			var attribute = info.GetAttribute<TAttribute>();
 
-			if (attribute != null && !string.IsNullOrEmpty(attribute.Name))// && !attribute.IsReference && !attribute.IsReferenceCollection)
+			if (attribute != null && !string.IsNullOrEmpty(attribute.Name))
 			{
 				return attribute.Name;
 			}

@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.DirectoryServices.Linq.Attributes;
 using System.DirectoryServices.Linq.Expressions;
+using System.Reflection;
 
 namespace System.DirectoryServices.Linq
 {
@@ -15,5 +17,7 @@ namespace System.DirectoryServices.Linq
 
 		IEnumerator<T> ExecuteQuery<T>(string query);
 		IEnumerator<T> ExecuteQuery<T>(DirectoryExpression expression);
+
+		string GetAttributeName<TAttribute>(MemberInfo info) where TAttribute : DirectoryAttribute;
 	}
 }

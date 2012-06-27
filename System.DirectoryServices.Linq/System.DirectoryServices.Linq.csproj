@@ -49,6 +49,7 @@
     <Reference Include="System.DirectoryServices.AccountManagement" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attributes\DirectoryAttribute.cs" />
     <Compile Include="Attributes\DirectoryPropertyAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -154,6 +155,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="LogikBug.pfx" />
+  </ItemGroup>
+  <ItemGroup>
     <COMReference Include="ActiveDs">
       <Guid>{97D25DB0-0363-11CF-ABC4-02608C9E7553}</Guid>
       <VersionMajor>1</VersionMajor>
@@ -163,9 +167,6 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="LogikBug.pfx" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

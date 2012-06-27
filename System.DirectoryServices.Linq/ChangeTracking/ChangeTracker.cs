@@ -26,12 +26,56 @@ namespace System.DirectoryServices.Linq.ChangeTracking
 
 		#endregion
 
-        #region Methods
+		#region Methods
 
 		private static DirectoryPropertyAttribute GetAttribute(MemberInfo info)
-        {
-            return info.GetAttribute<DirectoryPropertyAttribute>();
-        }
+		{
+			return info.GetAttribute<DirectoryPropertyAttribute>();
+		}
+
+		private static object GetPropertyValue(EntryObject entry, PropertyInfo property)
+		{
+			var value = property.GetValue(entry, null);
+
+			if (value is Guid)
+			{
+				return ((Guid)value).ToByteArray();
+			}
+
+			return value;
+		}
+
+		private static bool UpdateEntry(EntryObject entry, List<string> properties)
+		{
+			try
+			{
+				var entryType = entry.GetType();
+
+				foreach (var name in properties)
+				{
+					var property = entryType.GetProperty(name);
+					var value = GetPropertyValue(entry, property);
+
+					if (value != null)
+					{
+						var attribute = GetAttribute(property);
+
+						if (attribute == null || attribute.IsReadOnly)
+						{
+							continue;
+						}
+
+						entry.Entry.Properties[attribute.Name].Value = value;
+					}
+				}
+
+				return true;
+			}
+			catch (Exception e)
+			{
+				return false;
+			}
+		}
 
 		private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
@@ -58,35 +102,43 @@ namespace System.DirectoryServices.Linq.ChangeTracking
 			}
 		}
 
-        private List<string> GetPropertyList(EntryObject entryObject)
-        {
-            if (!Changes.ContainsKey(entryObject))
-            {
-                Changes.Add(entryObject, new List<string>());
-            }
+		private List<string> GetAllPropertyNames(EntryObject entryObject)
+		{
+			var type = entryObject.GetType();
+			var propertyNames = new List<string>();
 
-            return Changes[entryObject];
-        }
-
-        private List<string> GetAllPropertyNames(EntryObject entryObject)
-        {
-            var type = entryObject.GetType();
-            var propertyNames = new List<string>();
-
-            foreach (var item in type.GetProperties())
-            {
+			foreach (var item in type.GetProperties())
+			{
 				var attribute = GetAttribute(item);
 
-                if (attribute == null || string.IsNullOrEmpty(attribute.Name) || attribute.IsReadOnly)
-	            {
-                    continue;
-	            }
+				if (attribute == null || string.IsNullOrEmpty(attribute.Name) || attribute.IsReadOnly)
+				{
+					continue;
+				}
 
-                propertyNames.Add(item.Name);
-            }
+				propertyNames.Add(item.Name);
+			}
 
-            return propertyNames;
-        }
+			return propertyNames;
+		}
+
+		private List<string> GetPropertyList(EntryObject entryObject)
+		{
+			if (!Changes.ContainsKey(entryObject))
+			{
+				Changes.Add(entryObject, new List<string>());
+			}
+
+			return Changes[entryObject];
+		}
+
+		public void SetEntryObjectChanged(EntryObject entryObject)
+		{
+			if (!Changes.ContainsKey(entryObject))
+			{
+				Changes.Add(entryObject, new List<string>());
+			}
+		}
 
 		public void TrackChanges<T>(T entryObject) where T : EntryObject
 		{
@@ -96,20 +148,20 @@ namespace System.DirectoryServices.Linq.ChangeTracking
 			}
 		}
 
-        public void AddObject<T>(T entryObject) where T : EntryObject
-        {
-            if (!Equals(entryObject, default(T)))
-            {
-                TrackChanges(entryObject);
-                var properties = GetPropertyList(entryObject);
-                properties.AddRange(GetAllPropertyNames(entryObject));
+		public void AddObject<T>(T entryObject) where T : EntryObject
+		{
+			if (!Equals(entryObject, default(T)))
+			{
+				TrackChanges(entryObject);
+				var properties = GetPropertyList(entryObject);
+				properties.AddRange(GetAllPropertyNames(entryObject));
 
 				if (entryObject.Entry != null)
 				{
 					entryObject.Entry.CommitChanges();
 				}
-            }
-        }
+			}
+		}
 
 		public void DeleteObject<T>(T entryObject) where T : EntryObject
 		{
@@ -149,50 +201,6 @@ namespace System.DirectoryServices.Linq.ChangeTracking
 			Changes.Clear();
 		}
 
-		private static bool UpdateEntry(EntryObject entry, List<string> properties)
-		{
-			try
-			{
-				var entryType = entry.GetType();
-
-				foreach (var name in properties)
-				{
-					var property = entryType.GetProperty(name);
-					var value = GetPropertyValue(entry, property);
-
-					if (value != null)
-					{
-						var attribute = GetAttribute(property);
-
-						if (attribute == null || attribute.IsReadOnly)
-						{
-							continue;
-						}
-
-						entry.Entry.Properties[attribute.Name].Value = value;
-					}
-				}
-
-				return true;
-			}
-			catch (Exception e)
-			{
-				return false;
-			}
-		}
-
-		private static object GetPropertyValue(EntryObject entry, PropertyInfo property)
-		{
-			var value = property.GetValue(entry, null);
-
-			if (value is Guid)
-			{
-				return ((Guid)value).ToByteArray();
-			}
-
-			return value;
-		}
-
 		#endregion
-    }
+	}
 }

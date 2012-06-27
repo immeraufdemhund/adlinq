@@ -1,22 +1,20 @@
 ﻿namespace System.DirectoryServices.Linq.Attributes
 {
 	[AttributeUsage(AttributeTargets.Class)]
-	public class DirectoryTypeAttribute : Attribute
+	public class DirectoryTypeAttribute : DirectoryAttribute
 	{
 		private readonly string _schemaName;
 
 		public DirectoryTypeAttribute(string name)
+			: base(name)
 		{
-			Name = name;
 		}
 
 		public DirectoryTypeAttribute(string name, string schema)
+			: base(name)
 		{
-			Name = name;
 			_schemaName = schema;
 		}
-
-		public string Name { get; private set; }
 
 		public string SchemaName
 		{
