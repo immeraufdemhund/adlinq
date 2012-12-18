@@ -46,7 +46,6 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.DirectoryServices" />
-    <Reference Include="System.DirectoryServices.AccountManagement" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Attributes\DirectoryAttribute.cs" />
@@ -71,6 +70,7 @@
     <Compile Include="EntryObjects\EntryQueryState.cs" />
     <Compile Include="EntryObjects\EntryReference.cs" />
     <Compile Include="EntryObjects\EntrySet.cs" />
+    <Compile Include="EntryObjects\IEntryQuery.cs" />
     <Compile Include="EntryObjects\IEntrySet.cs" />
     <Compile Include="EntryObjects\IEntryWithRelationships.cs" />
     <Compile Include="Expressions\DirectoryExpressionType.cs" />

@@ -8,6 +8,7 @@ namespace System.DirectoryServices.Linq.Expressions
 		Single = 2,
 		FirstOrDefault = 3,
 		LastOrDefault = 4,
-		SingleOrDefault = 5,
+        SingleOrDefault = 5,
+        Count = 6,
 	}
 }

@@ -3,197 +3,208 @@ using System.DirectoryServices.Linq.Attributes;
 
 namespace System.DirectoryServices.Linq.EntryObjects
 {
-	public abstract class EntryObject : DisposableObject, IEntryWithRelationships, INotifyPropertyChanged
-	{
-		#region Events
+    public abstract class EntryObject : DisposableObject, IEntryWithRelationships, INotifyPropertyChanged
+    {
+        #region Events
 
-		public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
 
-		#endregion
+        #endregion
 
-		#region Fields
+        #region Fields
 
-		private const int UF_DONT_EXPIRE_PASSWD = 0x10000;
+        private const int UF_DONT_EXPIRE_PASSWD = 0x10000;
 
-		private IRelationshipManager _relationshipManager;
+        private IRelationshipManager _relationshipManager;
 
-		#endregion
+        #endregion
 
-		#region Constructors
+        #region Constructors
 
 
 
-		#endregion
+        #endregion
 
-		#region Properties
+        #region Properties
 
-		IRelationshipManager IEntryWithRelationships.RelationshipManager
-		{
-			get
-			{
-				if (_relationshipManager == null)
-				{
-					_relationshipManager = GetRelationshipManager();
-				}
+        IRelationshipManager IEntryWithRelationships.RelationshipManager
+        {
+            get
+            {
+                if (_relationshipManager == null)
+                {
+                    _relationshipManager = GetRelationshipManager();
+                }
 
-				return _relationshipManager;
-			}
-		}
+                return _relationshipManager;
+            }
+        }
 
-		internal Type ElementType
-		{
-			get
-			{
-				return GetType();
-			}
-		}
+        internal Type ElementType
+        {
+            get
+            {
+                return GetType();
+            }
+        }
 
-		internal string ADPath { get; set; }
+        internal string ADPath { get; set; }
 
-		internal DirectoryEntry Entry { get; set; }
+        internal DirectoryEntry Entry { get; set; }
 
-		internal ChangeState ChangeState { get; set; }
+        internal ChangeState ChangeState { get; set; }
 
-		internal DirectoryContext Context { get; set; }
+        internal DirectoryContext Context { get; set; }
 
-		#endregion
+        #endregion
 
-		#region Methods
+        #region Methods
 
-		internal string GetCnValue()
-		{
-			string givenName = null;
-			string surName = null;
+        internal string GetCnValue()
+        {
+            string givenName = null;
+            string surName = null;
+            string accountName = null;
 
-			foreach (var property in ElementType.GetProperties())
-			{
-				var attr = property.GetAttribute<DirectoryPropertyAttribute>();
+            foreach (var property in ElementType.GetProperties())
+            {
+                var attr = property.GetAttribute<DirectoryPropertyAttribute>();
 
-				if (attr == null)
-				{
-					continue;
-				}
+                if (attr == null)
+                {
+                    continue;
+                }
 
-				switch ((attr.Name ?? string.Empty).ToLower())
-				{
-					case "cn":
-					{
-						return Convert.ToString(property.GetValue(this, null));
-					}
-					case "givenname":
-					{
-						givenName = Convert.ToString(property.GetValue(this, null));
-						break;
-					}
-					case "sn":
-					{
-						surName = Convert.ToString(property.GetValue(this, null));
-						break;
-					}
-					default:
-					{
-						continue;
-					}
-				}
+                switch ((attr.Name ?? string.Empty).ToLower())
+                {
+                    case "cn":
+                        {
+                            return Convert.ToString(property.GetValue(this, null));
+                        }
+                    case "samaccountname":
+                        {
+                            accountName = Convert.ToString(property.GetValue(this, null));
+                            break;
+                        }
+                    case "givenname":
+                        {
+                            givenName = Convert.ToString(property.GetValue(this, null));
+                            break;
+                        }
+                    case "sn":
+                        {
+                            surName = Convert.ToString(property.GetValue(this, null));
+                            break;
+                        }
+                    default:
+                        {
+                            continue;
+                        }
+                }
 
-				if (!string.IsNullOrEmpty(givenName) && !string.IsNullOrEmpty(surName))
-				{
-					break;
-				}
-			}
+                if (!string.IsNullOrEmpty(accountName))
+                {
+                    return accountName;
+                }
 
-			return string.Concat(givenName, " ", surName);
-		}
+                if (!string.IsNullOrEmpty(givenName) && !string.IsNullOrEmpty(surName))
+                {
+                    break;
+                }
+            }
 
-		protected override void Dispose(bool disposing)
-		{
-			if (disposing && Entry != null)
-			{
-				Entry.Dispose();
-			}
-		}
+            return string.Concat(givenName, " ", surName);
+        }
 
-		protected virtual IRelationshipManager GetRelationshipManager()
-		{
-			return new RelationshipManager(this);
-		}
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && Entry != null)
+            {
+                Entry.Dispose();
+            }
+        }
 
-		protected void NotifyPropertyChanged(string propertyName)
-		{
-			if (PropertyChanged != null && !string.IsNullOrEmpty(propertyName))
-			{
-				PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-			}
-		}
+        protected virtual IRelationshipManager GetRelationshipManager()
+        {
+            return new RelationshipManager(this);
+        }
 
-		public void AddToAttribute(string attribute, object value)
-		{
-			if (!string.IsNullOrEmpty(attribute))
-			{
-				Entry.Properties[attribute].Add(value);
-				Context.ChangeTracker.SetEntryObjectChanged(this);
-			}
-		}
+        protected void NotifyPropertyChanged(string propertyName)
+        {
+            if (PropertyChanged != null && !string.IsNullOrEmpty(propertyName))
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
 
-		public void AddToAttribute(string attribute, params object[] values)
-		{
-			if (!string.IsNullOrEmpty(attribute) && values.Length > 0)
-			{
-				Entry.Properties[attribute].AddRange(values);
-				Context.ChangeTracker.SetEntryObjectChanged(this);
-			}
-		}
+        public void AddToAttribute(string attribute, object value)
+        {
+            if (!string.IsNullOrEmpty(attribute))
+            {
+                Entry.Properties[attribute].Add(value);
+                Context.ChangeTracker.SetEntryObjectChanged(this);
+            }
+        }
 
-		public void SetAttribute(string attribute, object value)
-		{
-			if (!string.IsNullOrEmpty(attribute))
-			{
-				Entry.Properties[attribute].Value = value;
-				Context.ChangeTracker.SetEntryObjectChanged(this);
-			}
-		}
+        public void AddToAttribute(string attribute, params object[] values)
+        {
+            if (!string.IsNullOrEmpty(attribute) && values.Length > 0)
+            {
+                Entry.Properties[attribute].AddRange(values);
+                Context.ChangeTracker.SetEntryObjectChanged(this);
+            }
+        }
 
-		public void SetAttribute(string attribute, params object[] values)
-		{
-			if (!string.IsNullOrEmpty(attribute))
-			{
-				var property = Entry.Properties[attribute];
+        public void SetAttribute(string attribute, object value)
+        {
+            if (!string.IsNullOrEmpty(attribute))
+            {
+                Entry.Properties[attribute].Value = value;
+                Context.ChangeTracker.SetEntryObjectChanged(this);
+            }
+        }
 
-				if (property.Count > 0)
-				{
-					property.Clear();
-				}
+        public void SetAttribute(string attribute, params object[] values)
+        {
+            if (!string.IsNullOrEmpty(attribute))
+            {
+                var property = Entry.Properties[attribute];
 
-				property.AddRange(values);
-				Context.ChangeTracker.SetEntryObjectChanged(this);
-			}
-		}
+                if (property.Count > 0)
+                {
+                    property.Clear();
+                }
 
-		public T GetAttribute<T>(string attribute)
-		{
-			if (Entry.Properties.Contains(attribute))
-			{
-				return (T)Entry.Properties[attribute].Value;
-			}
+                property.AddRange(values);
+                Context.ChangeTracker.SetEntryObjectChanged(this);
+            }
+        }
 
-			return default(T);
-		}
+        public T GetAttribute<T>(string attribute)
+        {
+            if (Entry.Properties.Contains(attribute))
+            {
+                return (T)Entry.Properties[attribute].Value;
+            }
 
-		public DateTime ParseDateTime(string attribute)
-		{
-			if (Entry.Properties.Contains(attribute))
-			{
-				object value = Entry.Properties[attribute].Value;
+            return default(T);
+        }
 
-				if (value != null && value is long)
-				{
-					return DateTime.FromFileTime((long)value);
-				}
-			}
+        public DateTime ParseDateTime(string attribute)
+        {
+            if (Entry.Properties.Contains(attribute))
+            {
+                object value = Entry.Properties[attribute].Value;
 
-			return DateTime.MinValue;
-		}
+                if (value != null && value is long)
+                {
+                    return DateTime.FromFileTime((long)value);
+                }
+            }
 
-		#endregion
-	}
+            return DateTime.MinValue;
+        }
+
+        #endregion
+    }
 }

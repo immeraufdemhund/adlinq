@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 
 namespace System.DirectoryServices.Linq.EntryObjects
 {
-	public abstract class EntryQuery : IQueryable, IOrderedQueryable
+	public abstract class EntryQuery : IEntryQuery, IQueryable, IOrderedQueryable
 	{
 		private readonly EntryQueryState _queryState;
 
@@ -14,7 +14,7 @@ namespace System.DirectoryServices.Linq.EntryObjects
 			_queryState = queryState;
 		}
 
-		public EntryQueryState QueryState
+		EntryQueryState IEntryQuery.QueryState
 		{
 			get
 			{
@@ -22,7 +22,7 @@ namespace System.DirectoryServices.Linq.EntryObjects
 			}
 		}
 
-		protected DirectoryContext Context
+		DirectoryContext IEntryQuery.Context
 		{
 			get
 			{
@@ -50,7 +50,7 @@ namespace System.DirectoryServices.Linq.EntryObjects
 		{
 			get
 			{
-				return Context.QueryProvider;
+				return _queryState.Context.QueryProvider;
 			}
 		}
 
@@ -61,7 +61,7 @@ namespace System.DirectoryServices.Linq.EntryObjects
 
 		protected virtual Expression GetExpression()
 		{
-			return QueryState.Expression;
+			return _queryState.Expression;
 		}
 
 		protected abstract Type GetElementType();
@@ -69,7 +69,7 @@ namespace System.DirectoryServices.Linq.EntryObjects
 		protected abstract IEnumerator GetEnumeratorCore();
 	}
 
-	public class EntryQuery<T> : EntryQuery, IQueryable<T>, IOrderedQueryable<T>
+	public class EntryQuery<T> : EntryQuery, IEntryQuery<T>, IQueryable<T>, IOrderedQueryable<T>
 	{
 		public EntryQuery(EntryQueryState queryState) : base(queryState)
 		{
@@ -92,8 +92,8 @@ namespace System.DirectoryServices.Linq.EntryObjects
 
 		internal IEnumerator<T> GetResultsEnumerator()
 		{
-			var result = QueryState.GetExpression();
-			return Context.QueryExecutor.ExecuteQuery<T>(result);
+			var result = ((IEntryQuery)this).QueryState.GetExpression();
+			return ((IEntryQuery)this).Context.QueryExecutor.ExecuteQuery<T>(result);
 		}
 
 		public IEnumerator<T> GetEnumerator()

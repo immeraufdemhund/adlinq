@@ -139,11 +139,6 @@ namespace System.DirectoryServices.Linq.Expressions
 			_root.SetTake(_skipTakeVisitor.VisitTake(method));
 		}
 
-		private void VisitCount(Expression expression)
-		{
-			// TODO Add Count Support
-		}
-
 		private void VisitWhere(LambdaExpression lambdaExpression)
 		{
 			if (_whereVisitor == null)

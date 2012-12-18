@@ -1,8 +1,11 @@
-﻿
+﻿using System.Text;
+
 namespace System.DirectoryServices.Linq.Filters
 {
 	public class AttributeFilter : Filter
 	{
+		private object _value;
+
 		#region Constructors
 		
 		public AttributeFilter() : base(null)
@@ -23,7 +26,30 @@ namespace System.DirectoryServices.Linq.Filters
 
 		public FilterOperator Operator { get; set; }
 
-		public object Value { get; set; }
+		public object Value
+		{
+			get
+			{
+				if (_value is Guid)
+				{
+					var builder = new StringBuilder();
+					var array = ((Guid)_value).ToByteArray();
+
+					for (int i = 0; i < array.Length; i++)
+					{
+						builder.AppendFormat(@"\{0}", array[i].ToString("x2"));
+					}
+
+					_value = builder.ToString();
+				}
+
+				return _value;
+			}
+			set
+			{
+				_value = value;
+			}
+		}
 
 		#endregion
 

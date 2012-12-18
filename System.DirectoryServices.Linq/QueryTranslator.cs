@@ -6,369 +6,378 @@ using System.Reflection;
 
 namespace System.DirectoryServices.Linq
 {
-	public class QueryTranslator : IQueryTranslator
-	{
-		#region Constructors
+    public class QueryTranslator : IQueryTranslator
+    {
+        #region Constructors
 
-		public QueryTranslator(DirectoryContext context)
-		{
-			Context = context;
-		}
+        public QueryTranslator(DirectoryContext context)
+        {
+            Context = context;
+        }
 
-		#endregion
+        #endregion
 
-		#region Properties
+        #region Properties
 
-		public DirectoryContext Context { get; private set; }
+        public DirectoryContext Context { get; private set; }
 
-		public IResultMapper ResultMapper
-		{
-			get
-			{
-				return Context.ResultMapper;
-			}
-		}
+        public IResultMapper ResultMapper
+        {
+            get
+            {
+                return Context.ResultMapper;
+            }
+        }
 
-		#endregion
+        #endregion
 
-		#region Methods
+        #region Methods
 
-		public T TranslateOne<T>(TranslatorContext context)
-		{
-			var result = TranslateOne(context);
-			var select = context.Expression.Select;
+        public T TranslateOne<T>(TranslatorContext context)
+        {
+            var result = TranslateOne(context);
+            var select = context.Expression.Select;
 
-			if (select != null)
-			{
-				var origionalType = context.Expression.GetOrigionalType();
+            if (select != null)
+            {
+                var origionalType = context.Expression.GetOrigionalType();
 
-				if (origionalType != typeof(T))
-				{
-					var projection = select.Projection.Compile();
-					result = projection.DynamicInvoke(result);
-				}
-			}
+                if (origionalType != typeof(T))
+                {
+                    var projection = select.Projection.Compile();
+                    result = projection.DynamicInvoke(result);
+                }
+            }
 
-			return (T)result;
-		}
+            return (T)result;
+        }
 
-		public T TranslateOne<T>(DirectorySearcher searcher)
-		{
-			var context = new TranslatorContext(searcher);
-			return ResultMapper.Map<T>(context.FindOne());
-		}
+        public T TranslateOne<T>(DirectorySearcher searcher)
+        {
+            var context = new TranslatorContext(searcher);
+            return ResultMapper.Map<T>(context.FindOne());
+        }
 
-		public T TranslateOne<T>(SingleResultExpression expression, DirectorySearcher searcher)
-		{
-			return TranslateOne<T>(new TranslatorContext(expression, searcher));
-		}
+        public T TranslateOne<T>(SingleResultExpression expression, DirectorySearcher searcher)
+        {
+            return TranslateOne<T>(new TranslatorContext(expression, searcher));
+        }
 
-		public object TranslateOne(TranslatorContext context)
-		{
-			var directorySearch = context.DirectorySearcher;
-			var origionalType = context.Expression.GetOrigionalType();
-			directorySearch.Filter = Parse(context).ToString();
-			return ResultMapper.Map(origionalType, context.FindOne());
-		}
+        public object TranslateOne(TranslatorContext context)
+        {
+            var directorySearch = context.DirectorySearcher;
+            var origionalType = context.Expression.GetOrigionalType();
+            directorySearch.Filter = Parse(context).ToString();
 
-		public object TranslateOne(Type elementType, DirectorySearcher searcher)
-		{
-			var context = new TranslatorContext(searcher);
-			return ResultMapper.Map(elementType, context.FindOne());
-		}
+            if (context.Expression.NodeType.Is(DirectoryExpressionType.SingleResult))
+            {
+                if (((SingleResultExpression)context.Expression).SingleResultType == SingleResultType.Count)
+                {
+                    return ((SearchResults)context.FindAll()).Count;
+                }
+            }
 
-		public object TranslateOne(SingleResultExpression expression, DirectorySearcher searcher)
-		{
-			return TranslateOne(new TranslatorContext(expression, searcher));
-		}
+            return ResultMapper.Map(origionalType, context.FindOne());
+        }
 
-		public DirectoryEnumerator<T> Translate<T>(TranslatorContext context)
-		{
-			var directorySearch = context.DirectorySearcher;
-			directorySearch.Filter = Parse(context).ToString();
-			return new DirectoryEnumerator<T>(context, ResultMapper, context.FindAll());
-		}
+        public object TranslateOne(Type elementType, DirectorySearcher searcher)
+        {
+            var context = new TranslatorContext(searcher);
+            return ResultMapper.Map(elementType, context.FindOne());
+        }
 
-		public DirectoryEnumerator<T> Translate<T>(DirectorySearcher searcher)
-		{
-			var context = new TranslatorContext(searcher);
-			return new DirectoryEnumerator<T>(context, ResultMapper, context.FindAll());
-		}
+        public object TranslateOne(SingleResultExpression expression, DirectorySearcher searcher)
+        {
+            return TranslateOne(new TranslatorContext(expression, searcher));
+        }
 
-		public DirectoryEnumerator<T> Translate<T>(DirectoryExpression expression, DirectorySearcher directorySearcher)
-		{
-			return Translate<T>(new TranslatorContext(expression, directorySearcher));
-		}
+        public DirectoryEnumerator<T> Translate<T>(TranslatorContext context)
+        {
+            var directorySearch = context.DirectorySearcher;
+            directorySearch.Filter = Parse(context).ToString();
+            return new DirectoryEnumerator<T>(context, ResultMapper, context.FindAll());
+        }
 
-		private static FilterBuilder Parse(TranslatorContext context)
-		{
-			var expression = context.Expression;
-			var builder = new FilterBuilder(expression.GetOrigionalType());
+        public DirectoryEnumerator<T> Translate<T>(DirectorySearcher searcher)
+        {
+            var context = new TranslatorContext(searcher);
+            return new DirectoryEnumerator<T>(context, ResultMapper, context.FindAll());
+        }
 
-			ParseWhereClause(builder, expression);
-			ParseOrderBy(context, expression.OrderBy);
+        public DirectoryEnumerator<T> Translate<T>(DirectoryExpression expression, DirectorySearcher directorySearcher)
+        {
+            return Translate<T>(new TranslatorContext(expression, directorySearcher));
+        }
 
-			return builder;
-		}
+        private static FilterBuilder Parse(TranslatorContext context)
+        {
+            var expression = context.Expression;
+            var builder = new FilterBuilder(expression.GetOrigionalType());
 
-		private static void ParseWhereClause(FilterBuilder builder, DirectoryExpression expression)
-		{
-			var type = expression.GetOrigionalType();
-			var attributeBuilder = builder.CreateBuilder();
-			attributeBuilder.AddObjectClass(GetName(type));
+            ParseWhereClause(builder, expression);
+            ParseOrderBy(context, expression.OrderBy);
 
-			foreach (var where in expression.WhereClause)
-			{
-				VisitExpression(attributeBuilder, where);
-			}
+            return builder;
+        }
 
-			builder.AddBuilder(attributeBuilder);
-		}
+        private static void ParseWhereClause(FilterBuilder builder, DirectoryExpression expression)
+        {
+            var type = expression.GetOrigionalType();
+            var attributeBuilder = builder.CreateBuilder();
+            attributeBuilder.AddObjectClass(GetName(type));
 
-		private static void ParseOrderBy(TranslatorContext context, OrderByExpression orderBy)
-		{
-			if (orderBy != null)
-			{
-				var sortOption = context.DirectorySearcher.Sort;
-				sortOption.Direction = (SortDirection)orderBy.Direction;
-				sortOption.PropertyName = GetName(orderBy.OrderByProperty.Member);
-			}
-		}
+            foreach (var where in expression.WhereClause)
+            {
+                VisitExpression(attributeBuilder, where);
+            }
 
-		private static void VisitExpression(AttributeBuilder builder, Expression expression)
-		{
-			if (expression.NodeType.Is(DirectoryExpressionType.Where))
-			{
-				VisitLambda(builder, ((WhereExpression)expression).Where);
-			}
-			else if (expression.NodeType.Is(ExpressionType.Lambda))
-			{
-				VisitLambda(builder, (LambdaExpression)expression);
-			}
-			else if (expression is BinaryExpression)
-			{
-				VisitBinary(builder, (BinaryExpression)expression);
-			}
-			else if (expression.NodeType.Is(ExpressionType.MemberAccess))
-			{
-				VisitMember(builder, (MemberExpression)expression);
-			}
-			else if (expression.NodeType.Is(ExpressionType.Constant))
-			{
-				VisitConstant(builder, (ConstantExpression)expression);
-			}
-			else if (expression.NodeType.Is(ExpressionType.Call))
-			{
-				VisitMethod(builder, (MethodCallExpression)expression);
-			}
-			else
-			{
-				throw new NotSupportedException();
-			}
-		}
+            builder.AddBuilder(attributeBuilder);
+        }
 
-		private static void VisitLambda(AttributeBuilder builder, LambdaExpression lambda)
-		{
-			if (lambda.Body is BinaryExpression)
-			{
-				VisitBinary(builder, (BinaryExpression)lambda.Body);
-			}
-			else if (lambda.Body is MethodCallExpression)
-			{
-				VisitMethod(builder, (MethodCallExpression)lambda.Body);
-			}
-		}
+        private static void ParseOrderBy(TranslatorContext context, OrderByExpression orderBy)
+        {
+            if (orderBy != null)
+            {
+                var sortOption = context.DirectorySearcher.Sort;
+                sortOption.Direction = (SortDirection)orderBy.Direction;
+                sortOption.PropertyName = GetName(orderBy.OrderByProperty.Member);
+            }
+        }
 
-		private static void VisitMember(AttributeBuilder builder, MemberExpression member)
-		{
-		}
+        private static void VisitExpression(AttributeBuilder builder, Expression expression)
+        {
+            if (expression.NodeType.Is(DirectoryExpressionType.Where))
+            {
+                VisitLambda(builder, ((WhereExpression)expression).Where);
+            }
+            else if (expression.NodeType.Is(ExpressionType.Lambda))
+            {
+                VisitLambda(builder, (LambdaExpression)expression);
+            }
+            else if (expression is BinaryExpression)
+            {
+                VisitBinary(builder, (BinaryExpression)expression);
+            }
+            else if (expression.NodeType.Is(ExpressionType.MemberAccess))
+            {
+                VisitMember(builder, (MemberExpression)expression);
+            }
+            else if (expression.NodeType.Is(ExpressionType.Constant))
+            {
+                VisitConstant(builder, (ConstantExpression)expression);
+            }
+            else if (expression.NodeType.Is(ExpressionType.Call))
+            {
+                VisitMethod(builder, (MethodCallExpression)expression);
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
+        }
 
-		private static void VisitConstant(AttributeBuilder builder, ConstantExpression constant)
-		{
-		}
+        private static void VisitLambda(AttributeBuilder builder, LambdaExpression lambda)
+        {
+            if (lambda.Body is BinaryExpression)
+            {
+                VisitBinary(builder, (BinaryExpression)lambda.Body);
+            }
+            else if (lambda.Body is MethodCallExpression)
+            {
+                VisitMethod(builder, (MethodCallExpression)lambda.Body);
+            }
+        }
 
-		private static void VisitBinary(AttributeBuilder builder, BinaryExpression binary)
-		{
-			switch (binary.NodeType)
-			{
-				case ExpressionType.AndAlso:
-				{
-					builder.Add(Filter.OpenAndGroup);
-					VisitExpression(builder, binary.Left);
-					VisitExpression(builder, binary.Right);
-					builder.Add(Filter.CloseGroup);
-					break;
-				}
-				case ExpressionType.OrElse:
-				{
-					builder.Add(Filter.OpenOrGroup);
-					VisitExpression(builder, binary.Left);
-					VisitExpression(builder, binary.Right);
-					builder.Add(Filter.CloseGroup);
-					break;
-				}
-				case ExpressionType.Equal:
-				{
-					VisitBinaryMemberAccess(builder, binary, FilterOperator.Equals);
-					break;
-				}
-				case ExpressionType.NotEqual:
-				{
-					VisitBinaryMemberAccess(builder, binary, FilterOperator.NotEquals);
-					break;
-				}
-				case ExpressionType.GreaterThan:
-				{
-					VisitBinaryMemberAccess(builder, binary, FilterOperator.GreaterThan);
-					break;
-				}
-				case ExpressionType.GreaterThanOrEqual:
-				{
-					VisitBinaryMemberAccess(builder, binary, FilterOperator.GreaterThanOrEqual);
-					break;
-				}
-				case ExpressionType.LessThan:
-				{
-					VisitBinaryMemberAccess(builder, binary, FilterOperator.LessThan);
-					break;
-				}
-				case ExpressionType.LessThanOrEqual:
-				{
-					VisitBinaryMemberAccess(builder, binary, FilterOperator.LessThanOrEqual);
-					break;
-				}
-				default:
-				{
-					throw new NotSupportedException();
-				}
-			}
-		}
+        private static void VisitMember(AttributeBuilder builder, MemberExpression member)
+        {
+        }
 
-		private static void VisitBinaryMemberAccess(AttributeBuilder builder, BinaryExpression binary, FilterOperator filterOperator)
-		{
-			Expression valueExpression = null;
-			var memberExpression = GetMemberAccessExpression(builder, binary.Left);
+        private static void VisitConstant(AttributeBuilder builder, ConstantExpression constant)
+        {
+        }
 
-			if (memberExpression == null)
-			{
-				valueExpression = binary.Left;
+        private static void VisitBinary(AttributeBuilder builder, BinaryExpression binary)
+        {
+            switch (binary.NodeType)
+            {
+                case ExpressionType.AndAlso:
+                    {
+                        builder.Add(Filter.OpenAndGroup);
+                        VisitExpression(builder, binary.Left);
+                        VisitExpression(builder, binary.Right);
+                        builder.Add(Filter.CloseGroup);
+                        break;
+                    }
+                case ExpressionType.OrElse:
+                    {
+                        builder.Add(Filter.OpenOrGroup);
+                        VisitExpression(builder, binary.Left);
+                        VisitExpression(builder, binary.Right);
+                        builder.Add(Filter.CloseGroup);
+                        break;
+                    }
+                case ExpressionType.Equal:
+                    {
+                        VisitBinaryMemberAccess(builder, binary, FilterOperator.Equals);
+                        break;
+                    }
+                case ExpressionType.NotEqual:
+                    {
+                        VisitBinaryMemberAccess(builder, binary, FilterOperator.NotEquals);
+                        break;
+                    }
+                case ExpressionType.GreaterThan:
+                    {
+                        VisitBinaryMemberAccess(builder, binary, FilterOperator.GreaterThan);
+                        break;
+                    }
+                case ExpressionType.GreaterThanOrEqual:
+                    {
+                        VisitBinaryMemberAccess(builder, binary, FilterOperator.GreaterThanOrEqual);
+                        break;
+                    }
+                case ExpressionType.LessThan:
+                    {
+                        VisitBinaryMemberAccess(builder, binary, FilterOperator.LessThan);
+                        break;
+                    }
+                case ExpressionType.LessThanOrEqual:
+                    {
+                        VisitBinaryMemberAccess(builder, binary, FilterOperator.LessThanOrEqual);
+                        break;
+                    }
+                default:
+                    {
+                        throw new NotSupportedException();
+                    }
+            }
+        }
 
-				memberExpression = GetMemberAccessExpression(builder, binary.Right);
+        private static void VisitBinaryMemberAccess(AttributeBuilder builder, BinaryExpression binary, FilterOperator filterOperator)
+        {
+            Expression valueExpression = null;
+            var memberExpression = GetMemberAccessExpression(builder, binary.Left);
 
-				if (memberExpression == null)
-				{
-					throw new Exception();
-				}
-			}
-			else
-			{
-				valueExpression = binary.Right;
-			}
+            if (memberExpression == null)
+            {
+                valueExpression = binary.Left;
 
-			var value = Expression.Lambda(valueExpression).Compile().DynamicInvoke();
-			builder.AddAttribute(GetName(memberExpression.Member), filterOperator, EscapeCharacters(value));
-		}
+                memberExpression = GetMemberAccessExpression(builder, binary.Right);
 
-		private static object EscapeCharacters(object value)
-		{
-			if (value != null && value is string)
-			{
-				return Convert.ToString(value).Replace("(", "0x28").Replace(")", "0x29").Replace("\\", "0x5c");
-			}
+                if (memberExpression == null)
+                {
+                    throw new Exception();
+                }
+            }
+            else
+            {
+                valueExpression = binary.Right;
+            }
 
-			return value;
-		}
+            var value = Expression.Lambda(valueExpression).Compile().DynamicInvoke();
+            builder.AddAttribute(GetName(memberExpression.Member), filterOperator, EscapeCharacters(value));
+        }
 
-		private static MemberExpression GetMemberAccessExpression(AttributeBuilder builder, Expression expression)
-		{
-			if (expression.NodeType.Is(ExpressionType.MemberAccess))
-			{
-				// Commented out by Stephen for the purpose of an anonomous object in the query.
-				// Example:
-				// var query = new { Cn = string.Empty };
-				// Users.Where(u => query.Cn == "My Name");
+        private static object EscapeCharacters(object value)
+        {
+            if (value != null && value is string)
+            {
+                return Convert.ToString(value).Replace("(", "0x28").Replace(")", "0x29").Replace("\\", "0x5c");
+            }
 
-				//MemberExpression memberExpression = (MemberExpression)expression;
+            return value;
+        }
 
-				//if (memberExpression.Member.DeclaringType == builder.Parent.GetObjectClassType())
-				//{
-				//    return memberExpression;
-				//}
+        private static MemberExpression GetMemberAccessExpression(AttributeBuilder builder, Expression expression)
+        {
+            if (expression.NodeType.Is(ExpressionType.MemberAccess))
+            {
+                // Commented out by Stephen for the purpose of an anonomous object in the query.
+                // Example:
+                // var query = new { Cn = string.Empty };
+                // Users.Where(u => query.Cn == "My Name");
 
-				// End comment by Stephen
+                //MemberExpression memberExpression = (MemberExpression)expression;
 
-				return (MemberExpression)expression;
-			}
+                //if (memberExpression.Member.DeclaringType == builder.Parent.GetObjectClassType())
+                //{
+                //    return memberExpression;
+                //}
 
-			return null;
-		}
+                // End comment by Stephen
 
-		private static void VisitMethod(AttributeBuilder builder, MethodCallExpression method)
-		{
-			var methodInfo = method.Method;
+                return (MemberExpression)expression;
+            }
 
-			if (methodInfo.DeclaringType == typeof(string) && methodInfo.CallingConvention.HasFlag(CallingConventions.HasThis))
-			{
-				switch (methodInfo.Name)
-				{
-					case "StartsWith":
-					{
-						if (method.Arguments.Count == 1)
-						{
-							VisitMethodCall(builder, method, method.Arguments[0], FilterOperator.StartsWith);
-						}
-						break;
-					}
-					case "EndsWith":
-					{
-						if (method.Arguments.Count == 1)
-						{
-							VisitMethodCall(builder, method, method.Arguments[0], FilterOperator.EndsWith);
-						}
-						break;
-					}
-					case "Contains":
-					{
-						if (method.Arguments.Count == 1)
-						{
-							VisitMethodCall(builder, method, method.Arguments[0], FilterOperator.Contains);
-						}
-						break;
-					}
-					default:
-					{
-						throw new NotSupportedException(string.Format(Properties.Resources.MethodNotSupported, methodInfo.Name));
-					}
-				}
-			}
-		}
+            return null;
+        }
 
-		private static void VisitMethodCall(AttributeBuilder builder, MethodCallExpression method, Expression valueExpression, FilterOperator filterOperator)
-		{
-			var value = Expression.Lambda(valueExpression).Compile().DynamicInvoke();
-			var memberExpression = GetMemberAccessExpression(builder, method.Object);
-			builder.AddAttribute(GetName(memberExpression.Member), filterOperator, value);
-		}
+        private static void VisitMethod(AttributeBuilder builder, MethodCallExpression method)
+        {
+            var methodInfo = method.Method;
 
-		private static string GetName(MemberInfo info)
-		{
-			var typeAttribute = info.GetAttribute<DirectoryTypeAttribute>();
+            if (methodInfo.DeclaringType == typeof(string) && methodInfo.CallingConvention.HasFlag(CallingConventions.HasThis))
+            {
+                switch (methodInfo.Name)
+                {
+                    case "StartsWith":
+                        {
+                            if (method.Arguments.Count == 1)
+                            {
+                                VisitMethodCall(builder, method, method.Arguments[0], FilterOperator.StartsWith);
+                            }
+                            break;
+                        }
+                    case "EndsWith":
+                        {
+                            if (method.Arguments.Count == 1)
+                            {
+                                VisitMethodCall(builder, method, method.Arguments[0], FilterOperator.EndsWith);
+                            }
+                            break;
+                        }
+                    case "Contains":
+                        {
+                            if (method.Arguments.Count == 1)
+                            {
+                                VisitMethodCall(builder, method, method.Arguments[0], FilterOperator.Contains);
+                            }
+                            break;
+                        }
+                    default:
+                        {
+                            throw new NotSupportedException(string.Format(Properties.Resources.MethodNotSupported, methodInfo.Name));
+                        }
+                }
+            }
+        }
 
-			if (typeAttribute != null)
-			{
-				return typeAttribute.Name;
-			}
+        private static void VisitMethodCall(AttributeBuilder builder, MethodCallExpression method, Expression valueExpression, FilterOperator filterOperator)
+        {
+            var value = Expression.Lambda(valueExpression).Compile().DynamicInvoke();
+            var memberExpression = GetMemberAccessExpression(builder, method.Object);
+            builder.AddAttribute(GetName(memberExpression.Member), filterOperator, value);
+        }
 
-			var propertyAttribute = info.GetAttribute<DirectoryPropertyAttribute>();
+        private static string GetName(MemberInfo info)
+        {
+            var typeAttribute = info.GetAttribute<DirectoryTypeAttribute>();
 
-			if (propertyAttribute != null)
-			{
-				return propertyAttribute.Name;
-			}
+            if (typeAttribute != null)
+            {
+                return typeAttribute.Name;
+            }
 
-			return info.Name;
-		}
+            var propertyAttribute = info.GetAttribute<DirectoryPropertyAttribute>();
 
-		#endregion
-	}
+            if (propertyAttribute != null)
+            {
+                return propertyAttribute.Name;
+            }
+
+            return info.Name;
+        }
+
+        #endregion
+    }
 }

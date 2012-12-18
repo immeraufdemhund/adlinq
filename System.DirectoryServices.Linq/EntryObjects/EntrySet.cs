@@ -5,135 +5,136 @@ using System.Linq.Expressions;
 
 namespace System.DirectoryServices.Linq.EntryObjects
 {
-	public abstract class EntrySet : IEntrySet
-	{
-		#region Constructors
+    public abstract class EntrySet : IEntrySet
+    {
+        #region Constructors
 
-		internal EntrySet(DirectoryContext context)
-		{
-			Context = context;
-		}
+        internal EntrySet(DirectoryContext context)
+        {
+            Context = context;
+        }
 
-		#endregion
+        #endregion
 
-		#region Properties
+        #region Properties
 
-		protected DirectoryContext Context { get; private set; }
+        protected DirectoryContext Context { get; private set; }
 
-		Type IQueryable.ElementType
-		{
-			get
-			{
-				return GetElementType();
-			}
-		}
+        Type IQueryable.ElementType
+        {
+            get
+            {
+                return GetElementType();
+            }
+        }
 
-		Expression IQueryable.Expression
-		{
-			get
-			{
-				return GetExpression();
-			}
-		}
+        Expression IQueryable.Expression
+        {
+            get
+            {
+                return GetExpression();
+            }
+        }
 
-		IQueryProvider IQueryable.Provider
-		{
-			get
-			{
-				return GetProvider();
-			}
-		}
+        IQueryProvider IQueryable.Provider
+        {
+            get
+            {
+                return GetProvider();
+            }
+        }
 
-		#endregion
+        #endregion
 
-		#region Methods
+        #region Methods
 
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumeratorCore();
-		}
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumeratorCore();
+        }
 
-		protected virtual IQueryProvider GetProvider()
-		{
-			return Context.QueryProvider;
-		}
+        protected virtual IQueryProvider GetProvider()
+        {
+            return Context.QueryProvider;
+        }
 
-		protected abstract Type GetElementType();
+        protected abstract Type GetElementType();
 
-		protected abstract Expression GetExpression();
+        protected abstract Expression GetExpression();
 
-		protected abstract IEnumerator GetEnumeratorCore();
+        protected abstract IEnumerator GetEnumeratorCore();
 
-		#endregion
-	}
+        #endregion
+    }
 
-	public class EntrySet<T> : EntrySet, IEntrySet<T> where T : class
-	{
-		#region Constructors
+    public class EntrySet<T> : EntrySet, IEntrySet<T> where T : class
+    {
+        #region Constructors
 
-		public EntrySet(DirectoryContext context) : base(context)
-		{
-		}
+        public EntrySet(DirectoryContext context)
+            : base(context)
+        {
+        }
 
-		#endregion
+        #endregion
 
-		#region Methods
+        #region Methods
 
-		protected override Type GetElementType()
-		{
-			return typeof(T);
-		}
+        protected override Type GetElementType()
+        {
+            return typeof(T);
+        }
 
-		protected override Expression GetExpression()
-		{
-			return Expression.Constant(this);
-		}
+        protected override Expression GetExpression()
+        {
+            return Expression.Constant(this);
+        }
 
-		protected override IEnumerator GetEnumeratorCore()
-		{
-			return GetEnumerator();
-		}
+        protected override IEnumerator GetEnumeratorCore()
+        {
+            return GetEnumerator();
+        }
 
-		protected virtual EntryQuery<T> CreateQuery()
-		{
-			return (EntryQuery<T>)GetProvider().CreateQuery<T>(GetExpression());
-		}
+        protected virtual EntryQuery<T> CreateQuery()
+        {
+            return (EntryQuery<T>)GetProvider().CreateQuery<T>(GetExpression());
+        }
 
-		EntryQuery<T> IEntrySet<T>.CreateQuery()
-		{
-			return CreateQuery();
-		}
+        IEntryQuery<T> IEntrySet<T>.CreateQuery()
+        {
+            return CreateQuery();
+        }
 
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
 
-		public IEnumerator<T> GetEnumerator()
-		{
-			return CreateQuery().GetEnumerator();
-		}
+        public IEnumerator<T> GetEnumerator()
+        {
+            return CreateQuery().GetEnumerator();
+        }
 
-		public void AddEntry(string samAccountName, T entry)
-		{
-			var entryObject = entry as EntryObject;
+        public void AddEntry(string samAccountName, T entry)
+        {
+            var entryObject = entry as EntryObject;
 
-			if (entryObject != null)
-			{
-				Context.AddObject(samAccountName, entryObject);
-			}
-		}
+            if (entryObject != null)
+            {
+                Context.AddObject(samAccountName, entryObject);
+            }
+        }
 
-		public void DeleteEntry(T entry)
-		{
-			var entryObject = entry as EntryObject;
+        public void DeleteEntry(T entry)
+        {
+            var entryObject = entry as EntryObject;
 
-			if (entryObject != null)
-			{
-				Context.DeleteObject(entryObject);
-			}
-		}
+            if (entryObject != null)
+            {
+                Context.DeleteObject(entryObject);
+            }
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 }

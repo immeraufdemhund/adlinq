@@ -5,13 +5,11 @@
 	{
 		private readonly string _schemaName;
 
-		public DirectoryTypeAttribute(string name)
-			: base(name)
+		public DirectoryTypeAttribute(string name) : base(name)
 		{
 		}
 
-		public DirectoryTypeAttribute(string name, string schema)
-			: base(name)
+		public DirectoryTypeAttribute(string name, string schema) : base(name)
 		{
 			_schemaName = schema;
 		}
