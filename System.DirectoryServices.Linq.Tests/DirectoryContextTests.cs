@@ -53,6 +53,18 @@ namespace System.DirectoryServices.Linq.Tests
 		}
 
 		[TestMethod]
+		public void GetCountWithQueryTest()
+		{
+			using (var context = new DirectoryContextMock())
+			{
+				var users = context.Users.Where(u => u.FirstName.StartsWith("st"));
+				var userCount = context.Users.Count(u => u.FirstName.StartsWith("st"));
+				var arrayUsers = users.ToArray();
+				Assert.AreEqual(arrayUsers.Length, userCount);
+			}
+		}
+
+		[TestMethod]
 		public void WhereUserFirstNameIsStephenTest()
 		{
 			using (var context = new DirectoryContextMock())

@@ -4,10 +4,14 @@ namespace System.DirectoryServices.Linq.Filters
 {
 	public class AttributeFilter : Filter
 	{
+		#region Fields
+
 		private object _value;
 
+		#endregion
+
 		#region Constructors
-		
+
 		public AttributeFilter() : base(null)
 		{
 		}
