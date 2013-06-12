@@ -80,7 +80,7 @@ namespace System.DirectoryServices.Linq.Tests
 		{
 			using (var context = new DirectoryContextMock())
 			{
-				var single = context.Users.First(u => u.Email == "stephen.baker@brookfieldrps.com");
+				var single = context.Users.First(u => u.Email == "stephen.baker@homeserver.local");
 
 				Assert.IsNotNull(single);
 				Assert.AreEqual(single.FirstName, "Stephen");
