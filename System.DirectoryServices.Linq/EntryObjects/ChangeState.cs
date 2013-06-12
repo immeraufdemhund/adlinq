@@ -3,8 +3,9 @@ namespace System.DirectoryServices.Linq.EntryObjects
 {
 	public enum ChangeState
 	{
-		Update = 0,
-		Insert = 1,
-		Delete = 2
+		None = 0,
+		Update = 1,
+		Insert = 2,
+		Delete = 3
 	}
 }

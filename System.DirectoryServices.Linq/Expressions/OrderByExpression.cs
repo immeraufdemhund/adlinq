@@ -2,7 +2,7 @@
 
 namespace System.DirectoryServices.Linq.Expressions
 {
-	public class OrderByExpression : Expression
+	public class OrderByExpression : DirectoryExpressionBase
 	{
 		#region Constructors
 
@@ -10,9 +10,8 @@ namespace System.DirectoryServices.Linq.Expressions
 		{
 		}
 
-		public OrderByExpression(MemberExpression expression, OrderByDirection direction)
+		public OrderByExpression(MemberExpression expression, OrderByDirection direction) : base(expression, DirectoryExpressionType.OrderBy)
 		{
-			OrderByProperty = expression;
 			Direction = direction;
 		}
 
@@ -20,25 +19,15 @@ namespace System.DirectoryServices.Linq.Expressions
 
 		#region Properties
 
-		public override Type Type
-		{
-			get
-			{
-				return OrderByProperty.Type;
-			}
-		}
-
-		public override ExpressionType NodeType
-		{
-			get
-			{
-				return (ExpressionType)DirectoryExpressionType.OrderBy;
-			}
-		}
-
 		public OrderByDirection Direction { get; internal set; }
 
-		public MemberExpression OrderByProperty { get; private set; }
+		public MemberExpression OrderByProperty
+		{
+			get
+			{
+				return (MemberExpression)RootExpression;
+			}
+		}
 
 		#endregion
 	}

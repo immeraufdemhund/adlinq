@@ -38,7 +38,7 @@ namespace System.DirectoryServices.Linq
 
         public DirectoryContext(DirectoryEntry domainEntry)
         {
-            DomainEntry = domainEntry;
+			RootEntry = domainEntry;
             domainEntry.AuthenticationType = AuthenticationTypes.Secure;
         }
 
@@ -46,7 +46,7 @@ namespace System.DirectoryServices.Linq
 
         #region Properties
 
-        internal DirectoryEntry DomainEntry { get; private set; }
+		public DirectoryEntry RootEntry { get; private set; }
 
         public IChangeTracker ChangeTracker
         {
@@ -121,7 +121,7 @@ namespace System.DirectoryServices.Linq
 
         private DirectoryEntry GetParentDirectoryEntry(DirectoryTypeAttribute directoryType)
         {
-            return DomainEntry.Children.Find(directoryType.SchemaName);
+			return RootEntry.Children.Find(directoryType.SchemaName) ?? RootEntry;
         }
 
         public static string GetLdapConnectionString()
@@ -136,10 +136,10 @@ namespace System.DirectoryServices.Linq
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing && DomainEntry != null)
-            {
-                DomainEntry.Dispose();
-            }
+			if (disposing && RootEntry != null)
+			{
+				RootEntry.Dispose();
+			}
         }
 
         protected virtual IChangeTracker GetChangeTracker()
@@ -172,29 +172,54 @@ namespace System.DirectoryServices.Linq
             return new EntrySet<T>(this);
         }
 
-        public void AddObject<T>(T entry) where T : EntryObject
-        {
-            AddObject(entry.GetCnValue(), entry);
-        }
+		public void AddObject<T>(T entry) where T : class
+		{
+			var entryObject = entry as EntryObject;
 
-        public void AddObject<T>(string cnName, T entry) where T : EntryObject
-        {
-            if (!string.IsNullOrEmpty(cnName) && entry != null)
-            {
-                var entryType = entry.GetType();
-                var schemaName = entryType.AssertGetAttribute<DirectoryTypeAttribute>();
-                var parentEntry = GetParentDirectoryEntry(schemaName);
-                entry.Entry = parentEntry.Children.Add(string.Concat("CN=", cnName), schemaName.Name);
-                ChangeTracker.AddObject(entry);
-            }
-        }
+			if (entryObject != null)
+			{
+				AddObject(entryObject.GetCnValue(), entryObject);
+			}
+		}
 
-        public void DeleteObject<T>(T entry) where T : EntryObject
-        {
-            entry.ChangeState = ChangeState.Delete;
-            ChangeTracker.DeleteObject(entry);
-        }
+		public void AddObject<T>(string cnName, T entry) where T : class
+		{
+			if (!string.IsNullOrEmpty(cnName) && entry != null)
+			{
+				var entryObject = entry as EntryObject;
 
+				if (entryObject != null)
+				{
+					if (entryObject.Parent == null)
+					{
+						var schemaName = typeof (T).AssertGetAttribute<DirectoryTypeAttribute>();
+
+						entryObject.SetParent(new NamedEntryObject
+						{
+							Entry = GetParentDirectoryEntry(schemaName)
+						});
+					}
+
+					entryObject.AddToParent(cnName);
+					ChangeTracker.AddObject(entryObject);
+				}
+
+				//TODO: Handle non-EntryObject types. - Stephen Baker
+			}
+		}
+
+		public void DeleteObject<T>(T entry) where T : class
+		{
+			var entryObject = entry as EntryObject;
+
+			if (entryObject != null)
+			{
+				entryObject.ChangeState = ChangeState.Delete;
+				ChangeTracker.DeleteObject(entryObject);
+			}
+
+			//TODO: Handle non-EntryObject types. - Stephen Baker
+		}
         public void SubmitChanges()
         {
             //EventLog.WriteEntry("Application", "SubmitChanges begin", //EventLogEntryType.Error);

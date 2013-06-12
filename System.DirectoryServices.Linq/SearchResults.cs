@@ -23,8 +23,7 @@ namespace System.DirectoryServices.Linq
             _searchResults = searchResults;
         }
 
-        public SearchResults(DirectoryExpression expression, SearchResultCollection searchResults)
-            : this(searchResults)
+		public SearchResults(DirectoryExpression expression, SearchResultCollection searchResults) : this(searchResults)
         {
             _expression = expression;
         }

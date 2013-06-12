@@ -50,9 +50,10 @@ namespace System.DirectoryServices.Linq
                 {
                     var entryObject = (EntryObject)mappedObject;
                     entryObject.Context = Context;
-                    entryObject.ChangeState = ChangeState.Update;
-                    entryObject.ADPath = result.Path.Replace("LDAP://", string.Empty);
-                    entryObject.Entry = result.GetDirectoryEntry();
+					entryObject.ChangeState = ChangeState.None;
+					entryObject.ADPath = result.Path;
+					entryObject.Entry = result.GetDirectoryEntry();
+					entryObject.SetParent(entryObject.Entry.Parent);
                     Context.ChangeTracker.TrackChanges(entryObject);
                 }
 

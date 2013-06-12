@@ -6,21 +6,13 @@ namespace System.DirectoryServices.Linq.Expressions
 	{
 		#region Constructors
 
-		public SingleResultExpression(Expression expression) : base(expression)
+		public SingleResultExpression(Expression expression) : base(expression, DirectoryExpressionType.SingleResult)
 		{
 		}
 
 		#endregion
 
 		#region Properties
-
-		public override ExpressionType NodeType
-		{
-			get
-			{
-				return (ExpressionType)DirectoryExpressionType.SingleResult;
-			}
-		}
 
 		public SingleResultType SingleResultType { get; internal set; }
 

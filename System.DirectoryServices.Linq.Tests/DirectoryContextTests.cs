@@ -10,57 +10,44 @@ namespace System.DirectoryServices.Linq.Tests
 	[TestClass]
 	public class DirectoryContextTests
 	{
-		public DirectoryContextTests()
-		{
-		}
-
-		private TestContext testContextInstance;
-
-		/// <summary>
-		///Gets or sets the test context which provides
-		///information about and functionality for the current test run.
-		///</summary>
-		public TestContext TestContext
-		{
-			get
-			{
-				return testContextInstance;
-			}
-			set
-			{
-				testContextInstance = value;
-			}
-		}
+		private const string ConnectionString = "LDAP://homeserver.local/DC=homeserver,DC=local";
 
 		[TestMethod]
 		public void DefaultConstructorTest()
 		{
 			using (var context = new DirectoryContextMock())
 			{
+                var users = context.Users.Where(u => u.FirstName.StartsWith("st")).Skip(10).Take(10);
+                var count = users.Count();
+
 				Assert.IsNotNull(context.ConnectionString);
 			}
 		}
 
-		[TestMethod]
-		public void GetCountTest()
-		{
-			using (var context = new DirectoryContextMock())
-			{
-                var users = context.Users.Where(u => u.FirstName.StartsWith("st"));
-                var arrayUsers = users.ToArray();
-                Assert.AreEqual(arrayUsers.Length, users.Count());
-			}
-		}
+        [TestMethod]
+        public void GetCountWithQueryTest()
+        {
+            using (var context = new DirectoryContextMock())
+            {
+                var userCount1 = context.Users.Where(u => u.FirstName.StartsWith("st")).Select(u => new { u.FirstName }).Count();
+                var userCount2 = context.Users.Count(u => u.FirstName.StartsWith("st"));
+
+				Assert.AreEqual(userCount1, userCount2);
+            }
+        }
 
 		[TestMethod]
-		public void GetCountWithQueryTest()
+		public void GetQueryableTypeTest()
 		{
 			using (var context = new DirectoryContextMock())
 			{
-				var users = context.Users.Where(u => u.FirstName.StartsWith("st"));
-				var userCount = context.Users.Count(u => u.FirstName.StartsWith("st"));
-				var arrayUsers = users.ToArray();
-				Assert.AreEqual(arrayUsers.Length, userCount);
+				var user = context.Users.First(u => u.UserName == "sbaker");
+				var userGroups = user.Groups.ToArray();
+				var group = context.Groups.First(u => u.Name == "gbl-biztalk_developers");
+				var groupUsers = group.Users.ToArray();
+
+				Assert.IsTrue(userGroups.Length > 0);
+				Assert.IsTrue(groupUsers.Length > 0);
 			}
 		}
 
@@ -74,7 +61,7 @@ namespace System.DirectoryServices.Linq.Tests
 					.Select(u => new { Name = string.Concat(u.FirstName, " ", u.LastName) })
 					.ToList();
 
-				Assert.IsTrue(users.Count == 1);
+				Assert.IsTrue(users.Count >= 1);
 				Assert.IsTrue(users.All(u => u.Name.StartsWith("Stephen")));
 			}
 		}
@@ -93,23 +80,12 @@ namespace System.DirectoryServices.Linq.Tests
 		{
 			using (var context = new DirectoryContextMock())
 			{
-				var single = context.Users.First(u => u.UserName == "sbaker");
+				var single = context.Users.First(u => u.Email == "stephen.baker@brookfieldrps.com");
+
 				Assert.IsNotNull(single);
 				Assert.AreEqual(single.FirstName, "Stephen");
 			}
 		}
-
-        [TestMethod]
-        public void GetUserByIdTest()
-        {
-            using (var context = new DirectoryContextMock())
-            {
-                var userId = new Guid("678f0f9d-e757-4c7d-af12-b3d33a5742bc");
-                var single = context.Users.First(u => u.Id == userId);
-                Assert.IsNotNull(single);
-                Assert.AreEqual(single.FirstName, "Stephen");
-            }
-        }
 
 		[TestMethod]
 		public void FirstUserByIdTest()
@@ -121,7 +97,7 @@ namespace System.DirectoryServices.Linq.Tests
 							  select u).Single();
 
 				Assert.IsNotNull(single);
-				Assert.AreEqual(single.UserName, "sbaker");
+				Assert.AreEqual(single.UserName.ToLower(), "sbaker");
 			}
 		}
 
@@ -133,7 +109,7 @@ namespace System.DirectoryServices.Linq.Tests
 				try
 				{
 					var single = (from u in context.Users
-								  where u.FirstName == "Stephen" //&& u.LastName == "Baker"
+								  where u.FirstName == "Stephen"
 								  select u).Single();
 				}
 				catch
@@ -151,7 +127,20 @@ namespace System.DirectoryServices.Linq.Tests
 		{
 			using (var context = new DirectoryContextMock())
 			{
-				var all = context.Users.Where(u => u.FirstName == "Stephen").ToArray();
+				var all = context.Users.Where(u => "Stephen" == u.FirstName);
+
+				Assert.IsNotNull(all);
+				Assert.IsTrue(all.Count() > 0);
+			}
+		}
+
+		[TestMethod]
+		public void WhereGetUsersByAnonymousObjectTest()
+		{
+			using (var context = new DirectoryContextMock())
+			{
+				var test = new { Cn = string.Empty };
+				var all = context.Users.Where(u => test.Cn == "Stephen Baker").ToArray();
 
 				Assert.IsNotNull(all);
 				Assert.IsTrue(all.Length > 0);
@@ -196,8 +185,8 @@ namespace System.DirectoryServices.Linq.Tests
 		{
 			using (var context = new DirectoryContextMock())
 			{
-                var all = context.Users.Where(u => u.FirstName.StartsWith("St"))
-					.Skip(10)
+				var all = context.Users.Where(u => u.FirstName.StartsWith("St"))
+					.Skip(90)
 					.Take(10)
 					.OrderBy(u => u.LastName)
 					.ToArray();
@@ -210,25 +199,60 @@ namespace System.DirectoryServices.Linq.Tests
 		[TestMethod]
 		public void AddAndDeleteNewUserSubmitChangesTest()
 		{
-            //using (var context = new DirectoryContextMock())
-            //{
-            //    var single = new User
-            //    {
-            //        UserName = "sbaker",
-            //        FirstName = "Steve",
-            //        LastName = "Baker",
-            //        Email = "sbaker@test.com"
-            //    };
-            //    context.AddObject(single);
-            //    single.SetPassword("1234!@#$");
-            //    context.SubmitChanges();
+			using (var context = new DirectoryContextMock(ConnectionString, "username", "password"))
+			{
+				var single = new User
+				{
+					UserName = "sbaker",
+					FirstName = "Steve",
+					LastName = "Baker",
+					Email = "sbaker@homeserver.local"
+				};
 
-            //    var single1 = context.Users.Single(u => u.UserName == "sbaker");
-            //    context.DeleteObject(single1);
-            //    context.SubmitChanges();
-            //    var single2 = context.Users.SingleOrDefault(u => u.UserName == "sbaker");
-            //    Assert.IsNull(single2);
-            //}
+				var ou = context.OrganizationUnits.First(o => o.Name == "TestOU");
+				single.SetParent(ou);
+				context.AddObject(single);
+				single.SetPassword("Wh@7Wh@7");
+				context.SubmitChanges();
+
+				var single1 = context.Users.Single(u => u.UserName == "sbaker");
+				context.DeleteObject(single1);
+				context.SubmitChanges();
+				var single2 = context.Users.SingleOrDefault(u => u.UserName == "sbaker");
+				Assert.IsNull(single2);
+			}
+		}
+
+		[TestMethod]
+		public void AddAndDeleteNewOuSubmitChangesTest()
+		{
+			using (var context = new DirectoryContextMock(ConnectionString, "username", "password"))
+			{
+				var ou = new OU {Name = "ChildOU"};
+				ou.SetParent(context.OrganizationUnits.First(u => u.Name == "TestOU"));
+				context.AddObject(ou);
+				context.SubmitChanges();
+
+				var childOu = context.OrganizationUnits.First(u => u.Name == "ChildOU");
+				context.DeleteObject(childOu);
+				context.SubmitChanges();
+			}
+		}
+
+		[TestMethod]
+		public void AddAndDeleteNewGroupSubmitChangesTest()
+		{
+			using (var context = new DirectoryContextMock(ConnectionString, "username", "password"))
+			{
+				var newGroup = new Group {Name = "TestGroup"};
+				newGroup.SetParent(context.OrganizationUnits.First(u => u.Name == "TestOU"));
+				context.AddObject(newGroup);
+				context.SubmitChanges();
+
+				var group = context.Groups.First(u => u.Name == "TestGroup");
+				context.DeleteObject(group);
+				context.SubmitChanges();
+			}
 		}
 
 		[TestMethod]
@@ -236,7 +260,7 @@ namespace System.DirectoryServices.Linq.Tests
 		{
 			using (var context = new DirectoryContextMock())
 			{
-				// Takes a while...fugure out why..
+				// Takes a while...figure out why..
 				var usersFirstNameMethodQuery = context.Users.Where(u => u.FirstName.Contains("tephe") || u.FirstName.Contains("teve"));
 				Assert.IsTrue(usersFirstNameMethodQuery.ToArray().Length > 0);
 			}
@@ -247,9 +271,9 @@ namespace System.DirectoryServices.Linq.Tests
 		{
 			using (var context = new DirectoryContextMock())
 			{
-				// Takes a while...fugure out why..
-				var usersFirstNameMethodQuery = context.Users.Where(u => u.FirstName.StartsWith("Ste") || u.FirstName.EndsWith("en"));
-				Assert.IsTrue(usersFirstNameMethodQuery.ToArray().Length > 0);
+				// Takes a while...figure out why..
+				var usersFirstNameMethodQuery = context.Users.Where(u => u.FirstName.StartsWith("Ste") || u.FirstName.EndsWith("en")).ToList();
+				Assert.IsTrue(usersFirstNameMethodQuery.Count > 0);
 			}
 		}
 	}

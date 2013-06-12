@@ -105,12 +105,18 @@ namespace System.DirectoryServices.Linq.Expressions
 			if (_root.NodeType.Is(DirectoryExpressionType.SingleResult))
 			{
 				var root = (SingleResultExpression)_root;
-				var resultType = SingleResultType.Single;
+				SingleResultType resultType;
 
-				if (Enum.TryParse<SingleResultType>(method.Method.Name, out resultType))
+				try
 				{
-					root.SingleResultType = resultType;
+					resultType = (SingleResultType)Enum.Parse((typeof(SingleResultType)), method.Method.Name);
 				}
+				catch
+				{
+					resultType = SingleResultType.Single;
+				}
+
+				root.SingleResultType = resultType;
 			}
 
 			if (method.Arguments.Count > 1)
@@ -151,12 +157,11 @@ namespace System.DirectoryServices.Linq.Expressions
 
 		private void VisitSelect(LambdaExpression lambdaExpression)
 		{
-			if (_selectVisitor != null)
+			if (_selectVisitor == null)
 			{
-				throw new Exception();
+				_selectVisitor = new SelectExpressionVisitor();
 			}
 
-			_selectVisitor = new SelectExpressionVisitor();
 			_root.SetSelect(_selectVisitor.VisitSelect(lambdaExpression));
 		}
 

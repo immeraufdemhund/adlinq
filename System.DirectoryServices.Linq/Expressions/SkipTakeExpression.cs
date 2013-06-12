@@ -2,46 +2,21 @@
 
 namespace System.DirectoryServices.Linq.Expressions
 {
-	public class SkipTakeExpression : Expression
+	public class SkipTakeExpression : DirectoryExpressionBase
 	{
-		#region Fields
-
-		private readonly DirectoryExpressionType _nodeType;
-
-		#endregion
-
 		#region Constructors
 
-		public SkipTakeExpression(ConstantExpression skipTake, DirectoryExpressionType nodeType)
+		public SkipTakeExpression(ConstantExpression skipTake, DirectoryExpressionType nodeType) : base(skipTake, nodeType)
 		{
 			if (nodeType != DirectoryExpressionType.Take && nodeType != DirectoryExpressionType.Skip)
 			{
 				throw new Exception();
 			}
-
-			SkipTake = skipTake;
-			_nodeType = nodeType;
 		}
 
 		#endregion
 
 		#region Properties
-
-		public override ExpressionType NodeType
-		{
-			get
-			{
-				return (ExpressionType)_nodeType;
-			}
-		}
-
-		public override Type Type
-		{
-			get
-			{
-				return SkipTake.Type;
-			}
-		}
 
 		public int Amount
 		{
@@ -51,7 +26,13 @@ namespace System.DirectoryServices.Linq.Expressions
 			}
 		}
 
-		public ConstantExpression SkipTake { get; private set; }
+		public ConstantExpression SkipTake
+		{
+			get
+			{
+				return (ConstantExpression)RootExpression;
+			}
+		}
 
 		#endregion
 	}

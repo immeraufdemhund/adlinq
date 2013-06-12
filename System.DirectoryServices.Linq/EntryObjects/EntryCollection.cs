@@ -99,7 +99,7 @@ namespace System.DirectoryServices.Linq.EntryObjects
             // Example AttributeName: "member:1.2.840.113556.1.4.1941:"
             var propertyAttribute = _property.AssertGetAttribute<EntryCollectionPropertyAttribute>();
             var attributeName = string.Concat(propertyAttribute.Name, propertyAttribute.MatchingRuleValue);
-            attributeBuilder.AddAttribute(attributeName, FilterOperator.Equals, _entryObject.ADPath);
+			attributeBuilder.AddAttribute(attributeName, FilterOperator.Equals, _entryObject.InternalDn);
             builder.AddBuilder(attributeBuilder);
 
             return builder.ToString();

@@ -2,36 +2,25 @@
 
 namespace System.DirectoryServices.Linq.Expressions
 {
-	public class SelectExpression : Expression
+	public class SelectExpression : DirectoryExpressionBase
 	{
 		#region Constructors
 
-		public SelectExpression(LambdaExpression projection)
+		public SelectExpression(LambdaExpression projection) : base(projection, DirectoryExpressionType.Select)
 		{
-			Projection = projection;
 		}
 
 		#endregion
 
 		#region Properties
 
-		public override ExpressionType NodeType
+		public LambdaExpression Projection
 		{
 			get
 			{
-				return (ExpressionType)DirectoryExpressionType.Select;
+				return (LambdaExpression)RootExpression;
 			}
 		}
-
-		public override Type Type
-		{
-			get
-			{
-				return Projection.Type;
-			}
-		}
-
-		public LambdaExpression Projection { get; private set; }
 
 		#endregion
 	}

@@ -84,7 +84,7 @@ namespace System.DirectoryServices.Linq
         private DirectorySearcher CreateDirectorySearcher(string filter, Type elementType)
         {
             var properties = GetPropertiesFromType(elementType);
-            return new DirectorySearcher(Context.DomainEntry, filter, properties)
+			return new DirectorySearcher(Context.RootEntry, filter, properties)
             {
                 PageSize = 1000,
                 SearchScope = SearchScope.Subtree,

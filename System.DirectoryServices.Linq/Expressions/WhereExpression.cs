@@ -2,36 +2,25 @@
 
 namespace System.DirectoryServices.Linq.Expressions
 {
-	public class WhereExpression : Expression
+	public class WhereExpression : DirectoryExpressionBase
 	{
 		#region Constructors
 
-		public WhereExpression(LambdaExpression where)
+		public WhereExpression(LambdaExpression where) : base(where, DirectoryExpressionType.Where)
 		{
-			Where = where;
 		}
 
 		#endregion
 
 		#region Properties
 
-		public override ExpressionType NodeType
+		public LambdaExpression Where
 		{
 			get
 			{
-				return (ExpressionType)DirectoryExpressionType.Where;
+				return (LambdaExpression)RootExpression;
 			}
 		}
-
-		public override Type Type
-		{
-			get
-			{
-				return Where.Type;
-			}
-		}
-
-		public LambdaExpression Where { get; private set; }
 
 		#endregion
 

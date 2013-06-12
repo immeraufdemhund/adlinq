@@ -6,11 +6,10 @@ using System.Linq.Expressions;
 
 namespace System.DirectoryServices.Linq.Expressions
 {
-	public class DirectoryExpression : Expression
+	public class DirectoryExpression : DirectoryExpressionBase
 	{
 		#region Fields
 
-		private readonly Expression _expression;
 		private readonly List<WhereExpression> _whereClause;
 
 		private Type _origionalType;
@@ -23,47 +22,18 @@ namespace System.DirectoryServices.Linq.Expressions
 
 		#region Constructors
 
-		public DirectoryExpression(Expression expression)
+		public DirectoryExpression(Expression expression) : this(expression, DirectoryExpressionType.Directory)
 		{
-			_expression = expression;
+		}
+
+		public DirectoryExpression(Expression expression, DirectoryExpressionType type) : base(expression, type)
+		{
 			_whereClause = new List<WhereExpression>();
 		}
 
 		#endregion
 
 		#region Properties
-
-		public override bool CanReduce
-		{
-			get
-			{
-				return true;
-			}
-		}
-
-		public override Type Type
-		{
-			get
-			{
-				return _expression.Type;
-			}
-		}
-
-		public override ExpressionType NodeType
-		{
-			get
-			{
-				return (ExpressionType)DirectoryExpressionType.Directory;
-			}
-		}
-
-		public Expression RootExpression
-		{
-			get
-			{
-				return _expression;
-			}
-		}
 
 		public OrderByExpression OrderBy
 		{
@@ -109,16 +79,11 @@ namespace System.DirectoryServices.Linq.Expressions
 
 		#region Methods
 
-		public override Expression Reduce()
-		{
-			return _expression;
-		}
-
 		public Type GetOrigionalType()
 		{
 			if (_origionalType == null)
 			{
-				_origionalType = GetOrigionalType(_expression);
+				_origionalType = GetOrigionalType(RootExpression);
 			}
 
 			return _origionalType;

@@ -38,7 +38,7 @@ namespace System.DirectoryServices.Linq
             var result = TranslateOne(context);
             var select = context.Expression.Select;
 
-            if (select != null)
+			if (!(result is int) && select != null)
             {
                 var origionalType = context.Expression.GetOrigionalType();
 
@@ -71,7 +71,9 @@ namespace System.DirectoryServices.Linq
 
             if (context.Expression.NodeType.Is(DirectoryExpressionType.SingleResult))
             {
-                if (((SingleResultExpression)context.Expression).SingleResultType == SingleResultType.Count)
+                var singleResultExpression = (SingleResultExpression)context.Expression;
+
+                if (singleResultExpression.SingleResultType == SingleResultType.Count)
                 {
                     return ((SearchResults)context.FindAll()).Count;
                 }
@@ -264,10 +266,14 @@ namespace System.DirectoryServices.Linq
 
                 memberExpression = GetMemberAccessExpression(builder, binary.Right);
 
-                if (memberExpression == null)
-                {
-                    throw new Exception();
-                }
+				if (memberExpression == null)
+				{
+					// no member was found..so assume one of the values is an attribute name.
+					var attributeName = Expression.Lambda(binary.Left).Compile().DynamicInvoke();
+					var attributeValue = Expression.Lambda(binary.Right).Compile().DynamicInvoke();
+					builder.AddAttribute(Convert.ToString(attributeName), filterOperator, EscapeCharacters(attributeValue));
+					return;
+				}
             }
             else
             {
@@ -316,7 +322,7 @@ namespace System.DirectoryServices.Linq
         {
             var methodInfo = method.Method;
 
-            if (methodInfo.DeclaringType == typeof(string) && methodInfo.CallingConvention.HasFlag(CallingConventions.HasThis))
+			if (methodInfo.DeclaringType == typeof(string) && (methodInfo.CallingConvention & CallingConventions.HasThis) == CallingConventions.HasThis)
             {
                 switch (methodInfo.Name)
                 {

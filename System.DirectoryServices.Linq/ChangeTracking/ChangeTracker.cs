@@ -68,30 +68,34 @@ namespace System.DirectoryServices.Linq.ChangeTracking
             }
         }
 
-        private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            var entryObject = sender as EntryObject;
+		private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			var entryObject = sender as EntryObject;
 
-            if (entryObject != null)
-            {
-                var property = entryObject.GetType().GetProperty(e.PropertyName);
+			if (entryObject != null)
+			{
+				var property = entryObject.GetType().GetProperty(e.PropertyName);
 
-                if (property != null)
-                {
-                    var attribute = GetAttribute(property);
+				if (property == null) { throw new InvalidOperationException(string.Concat("Property must be defined: ", e.PropertyName)); }
 
-                    if (attribute != null && !attribute.IsReadOnly)
-                    {
-                        var properties = GetPropertyList(entryObject);
+				var attribute = GetAttribute(property);
 
-                        if (!properties.Contains(e.PropertyName))
-                        {
-                            properties.Add(e.PropertyName);
-                        }
-                    }
-                }
-            }
-        }
+				if (attribute != null && !attribute.IsReadOnly)
+				{
+					var properties = GetPropertyList(entryObject);
+
+					if (!properties.Contains(e.PropertyName))
+					{
+						properties.Add(e.PropertyName);
+
+						if (entryObject.ChangeState != ChangeState.Insert && entryObject.ChangeState != ChangeState.Delete)
+						{
+							entryObject.ChangeState = ChangeState.Update;
+						}
+					}
+				}
+			}
+		}
 
         private List<string> GetAllPropertyNames(EntryObject entryObject)
         {
@@ -127,6 +131,7 @@ namespace System.DirectoryServices.Linq.ChangeTracking
         {
             if (!Changes.ContainsKey(entryObject))
             {
+				entryObject.ChangeState = ChangeState.Update;
                 Changes.Add(entryObject, new List<string>());
             }
         }
@@ -147,10 +152,12 @@ namespace System.DirectoryServices.Linq.ChangeTracking
                 var properties = GetPropertyList(entryObject);
                 properties.AddRange(GetAllPropertyNames(entryObject));
 
-                if (entryObject.Entry != null)
-                {
-                    entryObject.Entry.CommitChanges();
-                }
+				if (entryObject.Entry != null)
+				{
+					entryObject.Entry.CommitChanges();
+				}
+
+	            entryObject.ChangeState = ChangeState.Insert;
             }
         }
 

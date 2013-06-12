@@ -5,13 +5,17 @@ namespace System.DirectoryServices.Linq.Tests.Mocks
 {
 	public class DirectoryContextMock : DirectoryContext
 	{
+		public DirectoryContextMock() : base()
+		{
+		}
+
+		public DirectoryContextMock(string connectionString, string username, string password) : base(connectionString, username, password)
+		{
+		}
+
 		private IEntrySet<User> _users;
 		private IEntrySet<Group> _groups;
-
-		public DirectoryContextMock() : base(string.Empty)
-		{
-
-		}
+		private IEntrySet<OU> _ous;
 
 		public IEntrySet<User> Users
 		{
@@ -38,17 +42,30 @@ namespace System.DirectoryServices.Linq.Tests.Mocks
 				return _groups;
 			}
 		}
+
+		public IEntrySet<OU> OrganizationUnits
+		{
+			get
+			{
+				if (_ous == null)
+				{
+					_ous = CreateEntrySet<OU>();
+				}
+
+				return _ous;
+			}
+		}
 	}
 
 	[DirectoryType("User", "OU=ExternalUsers")]
 	public class User : UserEntryObject
 	{
 		private Guid _id;
+		private string _employeeNumber;
 		private string _email;
 		private string _userName;
 		private string _firstName;
 		private string _lastName;
-		private DateTime? _whenChanged;
 
 		[DirectoryProperty("objectguid", true)]
 		public Guid Id
@@ -67,16 +84,16 @@ namespace System.DirectoryServices.Linq.Tests.Mocks
 			}
 		}
 
-		[DirectoryProperty("whenchanged", true)]
-		public DateTime? LastModifiedDate
+		[DirectoryProperty("EmployeeNumber", true)]
+		public string EmployeeNumber
 		{
 			get
 			{
-				return _whenChanged;
+				return _employeeNumber;
 			}
 			set
 			{
-				_whenChanged = value;
+				_employeeNumber = value;
 			}
 		}
 
@@ -148,24 +165,7 @@ namespace System.DirectoryServices.Linq.Tests.Mocks
 			}
 		}
 
-		//[DirectoryProperty("userAccountControl")]
-		//public int UserAccountControl
-		//{
-		//    get
-		//    {
-		//        return _userAccountControl;
-		//    }
-		//    set
-		//    {
-		//        if (_userAccountControl != value)
-		//        {
-		//            _userAccountControl = value;
-		//            NotifyPropertyChanged("UserAccountControl");
-		//        }
-		//    }
-		//}
-
-		[EntryCollectionProperty("member")]
+		[EntryCollectionProperty("member", MatchingRule = MatchingRuleType.InChain)]
 		public EntryCollection<Group> Groups
 		{
 			get
@@ -175,10 +175,42 @@ namespace System.DirectoryServices.Linq.Tests.Mocks
 		}
 	}
 
-	[DirectoryType("group")]
+	[DirectoryType("group", "OU=ExternalUsers")]
 	public class Group : EntryObject
 	{
+		private string _name;
+
 		[DirectoryProperty("samaccountname")]
+		public string Name
+		{
+			get
+			{
+				return _name;
+			}
+			set
+			{
+				if (_name != value)
+				{
+					_name = value;
+					NotifyPropertyChanged("Name");
+				}
+			}
+		}
+
+		[EntryCollectionProperty("memberOf", MatchingRule = MatchingRuleType.InChain)]
+		public EntryCollection<User> Users
+		{
+			get
+			{
+				return ((IEntryWithRelationships)this).RelationshipManager.GetEntryCollection<User>("Users");
+			}
+		}
+	}
+
+	[DirectoryType("organizationalunit")]
+	public class OU : EntryObject
+	{
+		[DirectoryProperty("name", true)]
 		public string Name { get; set; }
 	}
 }

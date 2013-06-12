@@ -5,36 +5,39 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{3E15EB3B-F305-49A6-B8D2-438F01CF5AAD}</ProjectGuid>
+    <ProjectGuid>{2E4C862B-1496-492B-8361-33064476BE30}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>System.DirectoryServices.Linq</RootNamespace>
     <AssemblyName>System.DirectoryServices.Linq</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>bin\v4.5\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\System.DirectoryServices.Linq.xml</DocumentationFile>
+    <DocumentationFile>bin\v4.5\Debug\System.DirectoryServices.Linq.xml</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>bin\v4.5\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\System.DirectoryServices.Linq.xml</DocumentationFile>
+    <DocumentationFile>bin\v4.5\Release\System.DirectoryServices.Linq.xml</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -73,6 +76,8 @@
     <Compile Include="EntryObjects\IEntryQuery.cs" />
     <Compile Include="EntryObjects\IEntrySet.cs" />
     <Compile Include="EntryObjects\IEntryWithRelationships.cs" />
+    <Compile Include="EntryObjects\NamedEntryObject.cs" />
+    <Compile Include="Expressions\DirectoryExpressionBase.cs" />
     <Compile Include="Expressions\DirectoryExpressionType.cs" />
     <Compile Include="Expressions\DirectoryExpressionVisitor.cs" />
     <Compile Include="DirectoryQueryProvider.cs" />
@@ -156,17 +161,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="LogikBug.pfx" />
-  </ItemGroup>
-  <ItemGroup>
-    <COMReference Include="ActiveDs">
-      <Guid>{97D25DB0-0363-11CF-ABC4-02608C9E7553}</Guid>
-      <VersionMajor>1</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>tlbimp</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </COMReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
