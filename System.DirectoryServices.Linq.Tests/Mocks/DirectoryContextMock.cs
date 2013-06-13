@@ -212,5 +212,14 @@ namespace System.DirectoryServices.Linq.Tests.Mocks
 	{
 		[DirectoryProperty("name", true)]
 		public string Name { get; set; }
+
+		[EntryCollectionProperty(MatchingRule = MatchingRuleType.Children, Scope = SearchScope.OneLevel)]
+		public EntrySetCollection<OU> Ous
+		{
+			get
+			{
+				return ((IEntryWithRelationships)this).RelationshipManager.GetEntrySetCollection<OU>("Ous");
+			}
+		}
 	}
 }

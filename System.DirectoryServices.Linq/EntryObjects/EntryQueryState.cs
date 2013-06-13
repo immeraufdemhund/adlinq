@@ -52,4 +52,23 @@ namespace System.DirectoryServices.Linq.EntryObjects
 			return (SingleResultExpression)Visitor.VisitDirectory(expression);
 		}
 	}
+
+	public class EntrySetCollectionQueryState : EntryQueryState
+	{
+		public EntrySetCollectionQueryState(DirectoryContext context, EntryObject entry, SearchScope scope, Expression expression) : base(context, expression)
+		{
+			Scope = scope;
+			EntryObject = entry;
+		}
+
+		public EntrySetCollectionQueryState(DirectoryContext context, EntryObject entry, SearchScope scope, Type entryType, Expression expression) : base(context, entryType, expression)
+		{
+			Scope = scope;
+			EntryObject = entry;
+		}
+
+		internal SearchScope Scope { get; private set; }
+
+		internal EntryObject EntryObject { get; private set; }
+	}
 }

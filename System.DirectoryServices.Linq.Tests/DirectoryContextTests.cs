@@ -256,6 +256,38 @@ namespace System.DirectoryServices.Linq.Tests
 		}
 
 		[TestMethod]
+		public void MultipleOuSelectTest()
+		{
+			using (var context = new DirectoryContextMock(ConnectionString, "sso-dev\\svcprocess", "7UxBau9ksqq"))
+			{
+				var ous = context.OrganizationUnits.Where(u => u.Name == "TestOU").ToArray();
+				var ou = ous[0].Ous.Where(u => u.Name != null).ToArray();
+			}
+		}
+
+		[TestMethod]
+		public void FirstOuSelectTest()
+		{
+			using (var context = new DirectoryContextMock(ConnectionString, "sso-dev\\svcprocess", "7UxBau9ksqq"))
+			{
+				var ous = context.OrganizationUnits.Where(u => u.Name == "TestOU").ToArray();
+				var ou = ous[0].Ous.First(u => u.Name != null);
+				Assert.AreEqual(ou.Name, "Test1");
+			}
+		}
+
+		[TestMethod]
+		public void LastOuSelectTest()
+		{
+			using (var context = new DirectoryContextMock(ConnectionString, "sso-dev\\svcprocess", "7UxBau9ksqq"))
+			{
+				var ous = context.OrganizationUnits.Where(u => u.Name == "TestOU").ToArray();
+				var ou = ous[0].Ous.Last(u => u.Name != null);
+				Assert.AreEqual(ou.Name, "Test2");
+			}
+		}
+
+		[TestMethod]
 		public void WhereFirstNameContainsTest()
 		{
 			using (var context = new DirectoryContextMock())

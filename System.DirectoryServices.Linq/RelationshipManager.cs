@@ -35,5 +35,18 @@ namespace System.DirectoryServices.Linq
 
             return (EntryCollection<TEntry>)_relationships[propertyName];
         }
-    }
+		public EntrySetCollection<TEntry> GetEntrySetCollection<TEntry>(string propertyName) where TEntry : EntryObject
+		{
+			if (!_relationships.ContainsKey(propertyName))
+			{
+				var property = _parentType.GetProperty(propertyName);
+				var result = new EntrySetCollection<TEntry>(EntryObject, property);
+				_relationships.Add(propertyName, result);
+
+				return result;
+			}
+
+			return (EntrySetCollection<TEntry>)_relationships[propertyName];
+		}
+	}
 }

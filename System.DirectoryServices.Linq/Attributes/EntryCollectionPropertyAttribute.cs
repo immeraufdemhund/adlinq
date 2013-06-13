@@ -8,6 +8,10 @@ namespace System.DirectoryServices.Linq.Attributes
         private const string MatchingRuleBitOr = ":1.2.840.113556.1.4.804:";
         private const string MatchingRuleInChain = ":1.2.840.113556.1.4.1941:";
 
+        public EntryCollectionPropertyAttribute() : base(string.Empty, true)
+        {
+        }
+
         public EntryCollectionPropertyAttribute(string name) : base(name, true)
         {
         }

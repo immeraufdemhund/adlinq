@@ -69,7 +69,7 @@ namespace System.DirectoryServices.Linq
             return Context.QueryExecutor.Execute<TResult>(directoryExpression);
         }
 
-        private static Type GetQueryableType(Expression expression)
+		protected static Type GetQueryableType(Expression expression)
         {
             var methodCall = expression as MethodCallExpression;
 

@@ -90,10 +90,18 @@ namespace System.DirectoryServices.Linq.EntryObjects
 			return GetEnumerator();
 		}
 
-		internal IEnumerator<T> GetResultsEnumerator()
+		internal virtual IEnumerator<T> GetResultsEnumerator()
 		{
-			var result = ((IEntryQuery)this).QueryState.GetExpression();
-			return ((IEntryQuery)this).Context.QueryExecutor.ExecuteQuery<T>(result);
+			var queryState = ((IEntryQuery)this).QueryState;
+			var expression = queryState.GetExpression();
+
+			if (queryState is EntrySetCollectionQueryState)
+			{
+				var entryQueryState = (EntrySetCollectionQueryState)queryState;
+				return ((IEntryQuery)this).Context.QueryExecutor.ExecuteQuery<T>(entryQueryState.EntryObject.Entry, entryQueryState.Scope, expression);
+			}
+
+			return ((IEntryQuery)this).Context.QueryExecutor.ExecuteQuery<T>(expression);
 		}
 
 		public IEnumerator<T> GetEnumerator()

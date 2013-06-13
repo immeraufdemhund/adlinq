@@ -46,65 +46,50 @@ namespace System.DirectoryServices.Linq.EntryObjects
 
         private void LoadCollection()
         {
-            //_entryObject.Entry.RefreshCache(new string[] { "tokenGroups" });
+			var propertyAttribute = _property.AssertGetAttribute<EntryCollectionPropertyAttribute>();
+			var filter = CreateFilter(typeof(TEntry), propertyAttribute);
+			var queryExecutor = _entryObject.Context.QueryExecutor;
 
-            //for (int i = 0; i < _entryObject.Entry.Properties["tokenGroups"].Count; i++)
-            //{
-            //    SecurityIdentifier sid = new SecurityIdentifier((byte[])_entryObject.Entry.Properties["tokenGroups"][i], 0);
-            //    NTAccount nt = (NTAccount)sid.Translate(typeof(NTAccount));
-            //    System.Diagnostics.Debug.WriteLine(nt.Value);
-            //}
+			using (var enumerator = GetEntryEnumerator(queryExecutor, propertyAttribute, filter))
+			{
+				while (enumerator.MoveNext())
+				{
+					_items.Add(enumerator.Current);
+				}
+			}
 
-            //var user = (ActiveDs.IADsUser)_entryObject.Entry.NativeObject;
-            //var groups = user.Groups();
+			_isLoaded = true;
+		}
 
-            //foreach (var group in (IEnumerable)groups)
-            //{
-            //    DirectoryEntry obGpEntry = new DirectoryEntry(group);
+		private IEnumerator<TEntry> GetEntryEnumerator(IQueryExecutor queryExecutor, EntryCollectionPropertyAttribute propertyAttribute, string filter)
+		{
+			if (propertyAttribute.MatchingRule == MatchingRuleType.Children)
+			{
+				return queryExecutor.ExecuteQuery<TEntry>(_entryObject.Entry, propertyAttribute.Scope, filter);
+			}
 
-            //    System.Diagnostics.Debug.WriteLine("");
+			return queryExecutor.ExecuteQuery<TEntry>(filter);
+		}
 
-            //    foreach (PropertyValueCollection item in obGpEntry.Properties)
-            //    {
-            //        System.Diagnostics.Debug.WriteLine(item.Value);
-            //    }
+		private string CreateFilter(Type entryType, EntryCollectionPropertyAttribute propertyAttribute)
+		{
+			var builder = new FilterBuilder(entryType);
+			var attributeBuilder = builder.CreateBuilder();
+			var attribute = entryType.AssertGetAttribute<DirectoryTypeAttribute>();
+			attributeBuilder.AddObjectClass(attribute.Name);
 
-            //    Marshal.ReleaseComObject(group);
-            //}
+			if (propertyAttribute.MatchingRule != MatchingRuleType.Children)
+			{
+				// Example AttributeName: "member:1.2.840.113556.1.4.1941:"
+				var attributeName = string.Concat(propertyAttribute.Name, propertyAttribute.MatchingRuleValue);
+				attributeBuilder.AddAttribute(attributeName, FilterOperator.Equals, _entryObject.InternalDn);
+			}
 
-            //Marshal.ReleaseComObject(groups);
-            //Marshal.ReleaseComObject(user);
+			builder.AddBuilder(attributeBuilder);
 
-            var filter = CreateFilter(typeof(TEntry));
-            var queryExecutor = _entryObject.Context.QueryExecutor;
+			return builder.ToString();
+		}
 
-            using (var enumerator = queryExecutor.ExecuteQuery<TEntry>(filter))
-            {
-                while (enumerator.MoveNext())
-                {
-                    _items.Add(enumerator.Current);
-                }
-            }
-
-            _isLoaded = true;
-        }
-
-        private string CreateFilter(Type entryType)
-        {
-            var builder = new FilterBuilder(entryType);
-            var attributeBuilder = builder.CreateBuilder();
-            var attribute = entryType.AssertGetAttribute<DirectoryTypeAttribute>();
-            attributeBuilder.AddObjectClass(attribute.Name);
-
-            // Example AttributeName: "member:1.2.840.113556.1.4.1941:"
-            var propertyAttribute = _property.AssertGetAttribute<EntryCollectionPropertyAttribute>();
-            var attributeName = string.Concat(propertyAttribute.Name, propertyAttribute.MatchingRuleValue);
-			attributeBuilder.AddAttribute(attributeName, FilterOperator.Equals, _entryObject.InternalDn);
-            builder.AddBuilder(attributeBuilder);
-
-            return builder.ToString();
-        }
-
-        #endregion
-    }
+		#endregion
+	}
 }
