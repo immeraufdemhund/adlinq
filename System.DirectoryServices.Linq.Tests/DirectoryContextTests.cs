@@ -258,7 +258,7 @@ namespace System.DirectoryServices.Linq.Tests
 		[TestMethod]
 		public void MultipleOuSelectTest()
 		{
-			using (var context = new DirectoryContextMock(ConnectionString, "sso-dev\\svcprocess", "7UxBau9ksqq"))
+			using (var context = new DirectoryContextMock(ConnectionString, "username", "password"))
 			{
 				var ous = context.OrganizationUnits.Where(u => u.Name == "TestOU").ToArray();
 				var ou = ous[0].Ous.Where(u => u.Name != null).ToArray();
@@ -268,7 +268,7 @@ namespace System.DirectoryServices.Linq.Tests
 		[TestMethod]
 		public void FirstOuSelectTest()
 		{
-			using (var context = new DirectoryContextMock(ConnectionString, "sso-dev\\svcprocess", "7UxBau9ksqq"))
+			using (var context = new DirectoryContextMock(ConnectionString, "username", "password"))
 			{
 				var ous = context.OrganizationUnits.Where(u => u.Name == "TestOU").ToArray();
 				var ou = ous[0].Ous.First(u => u.Name != null);
@@ -279,7 +279,7 @@ namespace System.DirectoryServices.Linq.Tests
 		[TestMethod]
 		public void LastOuSelectTest()
 		{
-			using (var context = new DirectoryContextMock(ConnectionString, "sso-dev\\svcprocess", "7UxBau9ksqq"))
+			using (var context = new DirectoryContextMock(ConnectionString, "username", "password"))
 			{
 				var ous = context.OrganizationUnits.Where(u => u.Name == "TestOU").ToArray();
 				var ou = ous[0].Ous.Last(u => u.Name != null);
