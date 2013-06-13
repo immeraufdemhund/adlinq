@@ -221,5 +221,23 @@ namespace System.DirectoryServices.Linq.Tests.Mocks
 				return ((IEntryWithRelationships)this).RelationshipManager.GetEntrySetCollection<OU>("Ous");
 			}
 		}
+
+		[EntryCollectionProperty(MatchingRule = MatchingRuleType.Children)]
+		public EntrySetCollection<User> Users
+		{
+			get
+			{
+				return ((IEntryWithRelationships)this).RelationshipManager.GetEntrySetCollection<User>("Users");
+			}
+		}
+
+		[EntryCollectionProperty(MatchingRule = MatchingRuleType.Children)]
+		public EntrySetCollection<Group> Groups
+		{
+			get
+			{
+				return ((IEntryWithRelationships)this).RelationshipManager.GetEntrySetCollection<Group>("Groups");
+			}
+		}
 	}
 }

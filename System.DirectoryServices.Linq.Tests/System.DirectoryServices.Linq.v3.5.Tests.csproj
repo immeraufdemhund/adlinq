@@ -9,8 +9,8 @@
     <ProjectGuid>{20E632EE-4619-4A52-BCFD-94773BB97A96}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BrookfieldRPS.DirectoryServices.Linq.Tests</RootNamespace>
-    <AssemblyName>BrookfieldRPS.DirectoryServices.Linq.Tests</AssemblyName>
+    <RootNamespace>System.DirectoryServices.Linq.Tests</RootNamespace>
+    <AssemblyName>System.DirectoryServices.Linq.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
