@@ -176,7 +176,7 @@ namespace System.DirectoryServices.Linq.Tests.Mocks
 	}
 
 	[DirectoryType("group", "OU=ExternalUsers")]
-	public class Group : EntryObject
+	public class Group : GroupEntryObject
 	{
 		private string _name;
 

@@ -105,7 +105,7 @@ namespace System.DirectoryServices.Linq.Expressions
 				return GetOrigionalType(methodCall.Arguments[0]);
 			}
 
-			if (Type.IsGenericType && typeof(EntrySet<>).IsAssignableFrom(Type.GetGenericTypeDefinition()))
+			if (Type.IsGenericType && typeof(EntrySet<>).MakeGenericType(Type.GetGenericArguments()[0]).IsAssignableFrom(Type))
 			{
 				return Type.GetGenericArguments()[0];
 			}

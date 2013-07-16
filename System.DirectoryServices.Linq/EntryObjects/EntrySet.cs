@@ -71,8 +71,7 @@ namespace System.DirectoryServices.Linq.EntryObjects
     {
         #region Constructors
 
-        public EntrySet(DirectoryContext context)
-            : base(context)
+		public EntrySet(DirectoryContext context) : base(context)
         {
         }
 

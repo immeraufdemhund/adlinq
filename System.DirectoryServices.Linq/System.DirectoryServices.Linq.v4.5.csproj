@@ -75,6 +75,7 @@
     <Compile Include="EntryObjects\EntrySet.cs" />
     <Compile Include="EntryObjects\EntrySetCollection.cs" />
     <Compile Include="EntryObjects\EntrySetCollectionQueryProvider.cs" />
+    <Compile Include="EntryObjects\GroupEntryObject.cs" />
     <Compile Include="EntryObjects\IEntryQuery.cs" />
     <Compile Include="EntryObjects\IEntrySet.cs" />
     <Compile Include="EntryObjects\IEntryWithRelationships.cs" />

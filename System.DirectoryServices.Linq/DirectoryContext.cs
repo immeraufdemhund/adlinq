@@ -120,8 +120,15 @@ namespace System.DirectoryServices.Linq
         #region Methods
 
         private DirectoryEntry GetParentDirectoryEntry(DirectoryTypeAttribute directoryType)
-        {
-			return RootEntry.Children.Find(directoryType.SchemaName) ?? RootEntry;
+		{
+			try
+			{
+				return RootEntry.Children.Find(directoryType.SchemaName);
+			}
+			catch (Exception)
+			{
+				return RootEntry;
+			}
         }
 
         public static string GetLdapConnectionString()
@@ -178,7 +185,7 @@ namespace System.DirectoryServices.Linq
 
 			if (entryObject != null)
 			{
-				AddObject(entryObject.GetCnValue(), entryObject);
+				AddObject(entryObject.GetCnValue(), entry);
 			}
 		}
 
@@ -200,6 +207,7 @@ namespace System.DirectoryServices.Linq
 						});
 					}
 
+					entryObject.Context = this;
 					entryObject.AddToParent(cnName);
 					ChangeTracker.AddObject(entryObject);
 				}
@@ -220,6 +228,7 @@ namespace System.DirectoryServices.Linq
 
 			//TODO: Handle non-EntryObject types. - Stephen Baker
 		}
+
         public void SubmitChanges()
         {
             //EventLog.WriteEntry("Application", "SubmitChanges begin", //EventLogEntryType.Error);

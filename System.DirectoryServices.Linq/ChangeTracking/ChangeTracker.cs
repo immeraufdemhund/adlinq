@@ -45,25 +45,29 @@ namespace System.DirectoryServices.Linq.ChangeTracking
             return value;
         }
 
-        private static void UpdateEntry(EntryObject entry, List<string> properties)
+        private static void UpdateEntry(EntryObject entry, IEnumerable<string> properties)
         {
             var entryType = entry.GetType();
 
             foreach (var name in properties)
             {
                 var property = entryType.GetProperty(name);
-                var value = GetPropertyValue(entry, property);
+				var attribute = GetAttribute(property);
+
+				if (attribute == null || attribute.IsReadOnly)
+				{
+					continue;
+				}
+
+				var value = GetPropertyValue(entry, property);
 
                 if (value != null)
                 {
-                    var attribute = GetAttribute(property);
-
-                    if (attribute == null || attribute.IsReadOnly)
-                    {
-                        continue;
-                    }
-
                     entry.Entry.Properties[attribute.Name].Value = value;
+                }
+                else
+				{
+					entry.Entry.Properties[attribute.Name].Clear();
                 }
             }
         }

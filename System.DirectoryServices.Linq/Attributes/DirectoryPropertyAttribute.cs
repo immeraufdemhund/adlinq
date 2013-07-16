@@ -10,6 +10,7 @@
 		public DirectoryPropertyAttribute(string name, bool readOnly) : base(name)
 		{
 			IsReadOnly = readOnly;
+			Scope = SearchScope.Subtree;
 		}
 
 		public SearchScope Scope { get; set; }

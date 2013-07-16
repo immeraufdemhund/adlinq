@@ -10,6 +10,8 @@ namespace System.DirectoryServices.Linq.Tests
 	[TestClass]
 	public class DirectoryContextTests
 	{
+		private const string Username = "username";
+		private const string Password = "password";
 		private const string ConnectionString = "LDAP://homeserver.local/DC=homeserver,DC=local";
 
 		[TestMethod]
@@ -199,7 +201,7 @@ namespace System.DirectoryServices.Linq.Tests
 		[TestMethod]
 		public void AddAndDeleteNewUserSubmitChangesTest()
 		{
-			using (var context = new DirectoryContextMock(ConnectionString, "username", "password"))
+			using (var context = new DirectoryContextMock(ConnectionString, Username, Password))
 			{
 				var single = new User
 				{
@@ -226,7 +228,7 @@ namespace System.DirectoryServices.Linq.Tests
 		[TestMethod]
 		public void AddAndDeleteNewOuSubmitChangesTest()
 		{
-			using (var context = new DirectoryContextMock(ConnectionString, "username", "password"))
+			using (var context = new DirectoryContextMock(ConnectionString, Username, Password))
 			{
 				var ou = new OU {Name = "ChildOU"};
 				ou.SetParent(context.OrganizationUnits.First(u => u.Name == "TestOU"));
@@ -242,7 +244,7 @@ namespace System.DirectoryServices.Linq.Tests
 		[TestMethod]
 		public void AddAndDeleteNewGroupSubmitChangesTest()
 		{
-			using (var context = new DirectoryContextMock(ConnectionString, "username", "password"))
+			using (var context = new DirectoryContextMock(ConnectionString, Username, Password))
 			{
 				var newGroup = new Group {Name = "TestGroup"};
 				newGroup.SetParent(context.OrganizationUnits.First(u => u.Name == "TestOU"));
@@ -258,7 +260,7 @@ namespace System.DirectoryServices.Linq.Tests
 		[TestMethod]
 		public void MultipleOuSelectTest()
 		{
-			using (var context = new DirectoryContextMock(ConnectionString, "sso-dev\\svcprocess", "7UxBau9ksqq"))
+			using (var context = new DirectoryContextMock(ConnectionString, Username, Password))
 			{
 				var ou = context.OrganizationUnits.Single(u => u.Name == "TestOU");
 				var result = ou.Ous.Where(u => u.Name != null).ToArray();
@@ -269,7 +271,7 @@ namespace System.DirectoryServices.Linq.Tests
 		[TestMethod]
 		public void FirstOuSelectTest()
 		{
-			using (var context = new DirectoryContextMock(ConnectionString, "sso-dev\\svcprocess", "7UxBau9ksqq"))
+			using (var context = new DirectoryContextMock(ConnectionString, Username, Password))
 			{
 				var ou = context.OrganizationUnits.Single(u => u.Name == "TestOU");
 				var result = ou.Ous.First(u => u.Name != null);
@@ -280,7 +282,7 @@ namespace System.DirectoryServices.Linq.Tests
 		[TestMethod]
 		public void LastOuSelectTest()
 		{
-			using (var context = new DirectoryContextMock(ConnectionString, "sso-dev\\svcprocess", "7UxBau9ksqq"))
+			using (var context = new DirectoryContextMock(ConnectionString, Username, Password))
 			{
 				var ou = context.OrganizationUnits.Single(u => u.Name == "TestOU");
 				var result = ou.Ous.Last(u => u.Name != null);
@@ -291,7 +293,7 @@ namespace System.DirectoryServices.Linq.Tests
 		[TestMethod]
 		public void MultipleUserSelectTest()
 		{
-			using (var context = new DirectoryContextMock(ConnectionString, "sso-dev\\svcprocess", "7UxBau9ksqq"))
+			using (var context = new DirectoryContextMock(ConnectionString, Username, Password))
 			{
 				var ou = context.OrganizationUnits.Single(u => u.Name == "TestOU");
 				var user = ou.Users.Where(u => u.FirstName != null).ToArray();
@@ -302,7 +304,7 @@ namespace System.DirectoryServices.Linq.Tests
 		[TestMethod]
 		public void FirstUserSelectTest()
 		{
-			using (var context = new DirectoryContextMock(ConnectionString, "sso-dev\\svcprocess", "7UxBau9ksqq"))
+			using (var context = new DirectoryContextMock(ConnectionString, Username, Password))
 			{
 				var ou = context.OrganizationUnits.Single(u => u.Name == "TestOU");
 				var user = ou.Users.First(u => u.FirstName != null);
@@ -313,18 +315,18 @@ namespace System.DirectoryServices.Linq.Tests
 		[TestMethod]
 		public void LastUserSelectTest()
 		{
-			using (var context = new DirectoryContextMock(ConnectionString, "sso-dev\\svcprocess", "7UxBau9ksqq"))
+			using (var context = new DirectoryContextMock(ConnectionString, Username, Password))
 			{
 				var ou = context.OrganizationUnits.Single(u => u.Name == "TestOU");
 				var user = ou.Users.Last(u => u.FirstName != null);
-				Assert.AreEqual(user.FirstName, "TestOU");
+				Assert.AreEqual(user.FirstName, "TestUser");
 			}
 		}
 
 		[TestMethod]
 		public void MultipleGroupSelectTest()
 		{
-			using (var context = new DirectoryContextMock(ConnectionString, "sso-dev\\svcprocess", "7UxBau9ksqq"))
+			using (var context = new DirectoryContextMock(ConnectionString, Username, Password))
 			{
 				var ou = context.OrganizationUnits.Single(u => u.Name == "TestOU");
 				var group = ou.Groups.Where(u => u.Name != null).ToArray();
@@ -335,7 +337,7 @@ namespace System.DirectoryServices.Linq.Tests
 		[TestMethod]
 		public void FirstGroupSelectTest()
 		{
-			using (var context = new DirectoryContextMock(ConnectionString, "sso-dev\\svcprocess", "7UxBau9ksqq"))
+			using (var context = new DirectoryContextMock(ConnectionString, Username, Password))
 			{
 				var ou = context.OrganizationUnits.Single(u => u.Name == "TestOU");
 				var group = ou.Groups.First(u => u.Name != null);
@@ -346,7 +348,7 @@ namespace System.DirectoryServices.Linq.Tests
 		[TestMethod]
 		public void LastGroupSelectTest()
 		{
-			using (var context = new DirectoryContextMock(ConnectionString, "sso-dev\\svcprocess", "7UxBau9ksqq"))
+			using (var context = new DirectoryContextMock(ConnectionString, Username, Password))
 			{
 				var ou = context.OrganizationUnits.Single(u => u.Name == "TestOU");
 				var group = ou.Groups.Last(u => u.Name != null);
