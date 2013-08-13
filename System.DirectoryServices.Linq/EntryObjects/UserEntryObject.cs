@@ -12,11 +12,11 @@ namespace System.DirectoryServices.Linq.EntryObjects
 		/// </summary>
 		/// <param name="password">The value to set as the password.</param>
 		/// <returns>true if the password was set, false otherwise.</returns>
-		public bool SetPassword(string password)
+		public virtual bool SetPassword(string password)
 		{ 
 			if (!string.IsNullOrEmpty(password))
 			{
-				var setPasswordResult = Entry.Invoke("SetPassword", new[]
+				var setPasswordResult = Entry.Invoke("SetPassword", new object[]
 				{
 					password
 				});
@@ -40,11 +40,11 @@ namespace System.DirectoryServices.Linq.EntryObjects
         /// <param name="oldPassword">The old value of the password.</param>
         /// <param name="newPassword">The new value to set as the password.</param>
         /// <returns>true if the password was set, false otherwise.</returns>
-        public bool SetPassword(string oldPassword, string newPassword)
+		public virtual bool SetPassword(string oldPassword, string newPassword)
         {
             if (!string.IsNullOrEmpty(oldPassword))
             {
-                var setPasswordResult = Entry.Invoke("ChangePassword", new[]
+                var setPasswordResult = Entry.Invoke("ChangePassword", new object[]
 				{
 					oldPassword,
 					newPassword

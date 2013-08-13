@@ -377,5 +377,53 @@ namespace System.DirectoryServices.Linq.Tests
 				Assert.IsTrue(usersFirstNameMethodQuery.Count > 0);
 			}
 		}
+
+		[TestMethod]
+		public void EntrySetCollectionQueryProviderInheritedTest()
+		{
+			// Test that the query provider for a sub-query matches that of the parent.
+
+			// Arrange
+			var context = new DirectoryContextMock();
+			string ouName = "ExternalUsers";
+			Type queryableType;
+			Type whereType;
+
+			// Act
+			using (context)
+			{
+				var queryable = context.OrganizationUnits.Single(u => u.Name == ouName).Users;
+				var where = queryable.Where(u => true);
+				queryableType = (queryable as IQueryable).Provider.GetType();
+				whereType = where.Provider.GetType();
+			}
+
+			// Assert
+			Assert.AreEqual(queryableType, whereType);
+		}
+
+
+		[TestMethod]
+		public void OneLevelTest()
+		{
+			// Test that the OneLevel option works with subqueries.
+
+			// Arrange
+			var context = new DirectoryContextMock();
+			string ouName = "ExternalUsers";
+			int expected = 0; // Change this to your expected number!
+			int result;
+
+			// Act
+			using (context)
+			{
+				var queryable = context.OrganizationUnits.Single(u => u.Name == ouName).Users;
+				var x = queryable.Where(u => true);
+				result = x.Count();
+			}
+
+			// Assert
+			Assert.AreEqual(expected, result);
+		}
 	}
 }
