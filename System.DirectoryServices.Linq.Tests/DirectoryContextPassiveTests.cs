@@ -10,11 +10,37 @@ namespace System.DirectoryServices.Linq.Tests
 	[TestClass]
 	public class DirectoryContextPassiveTests
 	{
+		#region Test data
+
+		/// <summary>
+		/// A test user that exists in the directory.
+		/// </summary>
+		private User TestUser
+		{
+			get
+			{
+				return new User
+				{
+					FirstName = "Stephen",
+					LastName = "Baker",
+					UserName = "sbaker",
+					Email = "stephen.baker@homeserver.local"
+				};
+			}
+		}
+
+		string commonName = "Stephen Baker";
+		string ouName = "ExternalUsers";
+		string groupName = "gbl-biztalk_developers";
+		string otherFirstName = "Steve";
+
+		#endregion
+
 		[TestMethod]
 		public void DefaultConstructorTest()
 		{
 			// Arrange
-			string firstNameStart = "st";
+			string firstNameStart = TestUser.FirstName.Substring(0, 2).ToLowerInvariant();
 
 			using (var context = new DirectoryContextMock())
 			{
@@ -29,7 +55,7 @@ namespace System.DirectoryServices.Linq.Tests
         public void GetCountWithQueryTest()
         {
 			// Arrange
-			string firstNameStart = "st";
+			string firstNameStart = TestUser.FirstName.Substring(0, 2).ToLowerInvariant();
 
             using (var context = new DirectoryContextMock())
             {
@@ -44,8 +70,8 @@ namespace System.DirectoryServices.Linq.Tests
 		public void GetQueryableTypeTest()
 		{
 			// Arrange
-			string userName = "sbaker";
-			string groupName = "gbl-biztalk_developers";
+			string userName = TestUser.UserName;
+			string groupName = this.groupName;
 
 			using (var context = new DirectoryContextMock())
 			{
@@ -63,9 +89,9 @@ namespace System.DirectoryServices.Linq.Tests
 		public void WhereUserFirstNameIsStephenTest()
 		{
 			// Arrange
-			string firstName = "Stephen";
+			string firstName = TestUser.FirstName;
 			string lastNameTest = "Test";
-			string lastName = "Baker";
+			string lastName = TestUser.LastName;
 
 			using (var context = new DirectoryContextMock())
 			{
@@ -83,8 +109,8 @@ namespace System.DirectoryServices.Linq.Tests
 		public void NotEnumeratingTheResultsDoesntExecuteTest()
 		{
 			// Arrange
-			string partialFirstName1 = "tephe";
-			string partialFirstName2 = "teve";
+			string partialFirstName1 = TestUser.FirstName.Substring(1, TestUser.FirstName.Length - 2);
+			string partialFirstName2 = this.otherFirstName.Substring(1, this.otherFirstName.Length - 2);
 
 			using (var context = new DirectoryContextMock())
 			{
@@ -98,8 +124,8 @@ namespace System.DirectoryServices.Linq.Tests
 		public void FirstUserByEmailTest()
 		{
 			// Arrange
-			string email = "stephen.baker@homeserver.local";
-			string firstName = "Stephen";
+			string email = TestUser.Email;
+			string firstName = TestUser.FirstName;
 
 			using (var context = new DirectoryContextMock())
 			{
@@ -114,7 +140,7 @@ namespace System.DirectoryServices.Linq.Tests
 		public void FirstUserByIdTest()
 		{
 			// Arrange
-			string userName = "sbaker";
+			string userName = TestUser.UserName;
 
 			using (var context = new DirectoryContextMock())
 			{
@@ -131,7 +157,7 @@ namespace System.DirectoryServices.Linq.Tests
 		public void SingleUserByFirstNameAndLastNameFailsTest()
 		{
 			// Arrange
-			string firstName = "Stephen";
+			string firstName = TestUser.FirstName;
 
 			using (var context = new DirectoryContextMock())
 			{
@@ -156,7 +182,7 @@ namespace System.DirectoryServices.Linq.Tests
 		public void WhereUserFirstNameTest()
 		{
 			// Arrange
-			string userName = "Stephen";
+			string userName = TestUser.FirstName;
 
 			using (var context = new DirectoryContextMock())
 			{
@@ -171,7 +197,7 @@ namespace System.DirectoryServices.Linq.Tests
 		public void WhereGetUsersByAnonymousObjectTest()
 		{
 			// Arrange
-			string commonName = "Stephen Baker";
+			string commonName = this.commonName;
 
 			using (var context = new DirectoryContextMock())
 			{
@@ -187,7 +213,7 @@ namespace System.DirectoryServices.Linq.Tests
 		public void WhereLastUserFirstNameTest()
 		{
 			// Arrange
-			string firstName = "Stephen";
+			string firstName = TestUser.FirstName;
 
 			using (var context = new DirectoryContextMock())
 			{
@@ -215,7 +241,7 @@ namespace System.DirectoryServices.Linq.Tests
 		public void LastUserFirstNameIsNotEmptyTest()
 		{
 			// Arrange
-			string firstName = "Stephen";
+			string firstName = TestUser.FirstName;
 			string email = null;
 
 			using (var context = new DirectoryContextMock())
@@ -229,7 +255,7 @@ namespace System.DirectoryServices.Linq.Tests
 		[TestMethod]
 		public void WhereUserFirstNameSkip1Take10Test()
 		{
-			string firstNameStart = "St";
+			string firstNameStart = TestUser.FirstName.Substring(0, 2);
 
 			using (var context = new DirectoryContextMock())
 			{
@@ -247,8 +273,8 @@ namespace System.DirectoryServices.Linq.Tests
 		[TestMethod]
 		public void WhereFirstNameContainsTest()
 		{
-			string firstNameFragment1 = "tephe";
-			string firstNameFragment2 = "teve";
+			string firstNameFragment1 = TestUser.FirstName.Substring(1, TestUser.FirstName.Length - 2);
+			string firstNameFragment2 = this.otherFirstName.Substring(1, this.otherFirstName.Length - 2);
 
 			using (var context = new DirectoryContextMock())
 			{
@@ -261,8 +287,8 @@ namespace System.DirectoryServices.Linq.Tests
 		[TestMethod]
 		public void WhereFirstNameStartsWithAndEndsWithTest()
 		{
-			string firstNameStart = "Ste";
-			string firstNameEnd = "en";
+			string firstNameStart = TestUser.FirstName.Substring(0, 2);
+			string firstNameEnd = TestUser.FirstName.Substring(TestUser.FirstName.Length - 2);
 
 			using (var context = new DirectoryContextMock())
 			{
@@ -278,7 +304,7 @@ namespace System.DirectoryServices.Linq.Tests
 			// Test that the query provider for a sub-query matches that of the parent.
 
 			// Arrange
-			string ouName = "ExternalUsers";
+			string ouName = this.ouName;
 			Type queryableType;
 			Type whereType;
 
@@ -302,7 +328,7 @@ namespace System.DirectoryServices.Linq.Tests
 			// Test that the OneLevel option works with subqueries.
 
 			// Arrange
-			string ouName = "ExternalUsers";
+			string ouName = this.ouName;
 			int expected = 0; // Change this to your expected number!
 			int result;
 
