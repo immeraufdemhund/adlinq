@@ -54,6 +54,9 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DirectoryContextPassiveTests.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="DirectoryContextTests.cs" />
     <Compile Include="Mocks\DirectoryContextMock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
