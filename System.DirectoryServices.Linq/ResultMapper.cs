@@ -41,7 +41,7 @@ namespace System.DirectoryServices.Linq
             {
                 var mappedObject = Activator.CreateInstance(type);
 
-                foreach (PropertyInfo property in type.GetProperties())
+                foreach (PropertyInfo property in type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
                 {
                     MapProperty(mappedObject, property, result);
                 }

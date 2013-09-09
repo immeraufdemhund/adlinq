@@ -8,7 +8,7 @@ namespace System.DirectoryServices.Linq.EntryObjects
         /// Sets the password for the current account. Please refer to
         /// <see cref="SetPassword(string, string)"/> if you are changing
         /// the password for the user, unless you are setting the password
-        /// for the account for the first time. See
+        /// for the account for the first time.
 		/// </summary>
 		/// <param name="password">The value to set as the password.</param>
 		/// <returns>true if the password was set, false otherwise.</returns>

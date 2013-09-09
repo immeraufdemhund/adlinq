@@ -288,7 +288,7 @@ namespace System.DirectoryServices.Linq
         {
             if (value != null && value is string)
             {
-                return Convert.ToString(value).Replace("(", "0x28").Replace(")", "0x29").Replace("\\", "0x5c");
+                return Convert.ToString(value).Replace("(", "0x28").Replace(")", "0x29").Replace("\\", "0x5c").Replace(",", "\\,");
             }
 
             return value;

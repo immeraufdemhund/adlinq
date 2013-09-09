@@ -167,7 +167,7 @@ namespace System.DirectoryServices.Linq
         {
             var list = new List<string>();
 
-            foreach (var property in type.GetProperties())
+			foreach (var property in type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
             {
                 var attributeName = GetAttributeName<DirectoryPropertyAttribute>(property);
 

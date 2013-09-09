@@ -59,7 +59,7 @@ namespace System.DirectoryServices.Linq.EntryObjects
 		internal EntryObject Parent { get; set; }
 
 		[DirectoryProperty("distinguishedName")]
-		public string InternalDn { get; internal set; }
+		internal string InternalDn { get; internal set; }
         #endregion
 
         #region Methods
