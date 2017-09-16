@@ -1,4 +1,5 @@
-﻿using System.DirectoryServices.Linq.Tests.Mocks;
+﻿using System.Collections.Generic;
+using System.DirectoryServices.Linq.Tests.Mocks;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -49,6 +50,23 @@ namespace System.DirectoryServices.Linq.Tests
 
 				Assert.IsNotNull(context.ConnectionString);
 			}
+		}
+
+		[TestMethod]
+		public void GroupNamesTest() {
+			// Arrange
+			string userName = this.TestUser.UserName;
+			string[] groupNames;
+
+			// Act
+			using( var context = new DirectoryContextMock() ) {
+				var user = context.Users.First( u => u.UserName == userName );
+				groupNames = user.DirectGroupNames.ToArray();
+			}
+
+			// Assert
+			Assert.IsNotNull(groupNames);
+			Assert.AreNotEqual(0, groupNames.Length);
 		}
 
         [TestMethod]
@@ -194,19 +212,33 @@ namespace System.DirectoryServices.Linq.Tests
 		}
 
 		[TestMethod]
-		public void WhereGetUsersByAnonymousObjectTest()
-		{
+		public void TrivialClauseTrue() {
 			// Arrange
-			string commonName = this.commonName;
+			int count;
+			int unexpected = 0;
 
-			using (var context = new DirectoryContextMock())
-			{
-				var test = new { Cn = string.Empty };
-				var all = context.Users.Where(u => test.Cn == commonName).ToArray();
-
-				Assert.IsNotNull(all);
-				Assert.IsTrue(all.Length > 0);
+			// Act
+			using( var context = new DirectoryContextMock() ) {
+				count = context.Users.Where(u => true).Count();
 			}
+
+			// Assert
+			Assert.AreNotEqual(unexpected, count);
+		}
+
+		[TestMethod]
+		public void TrivialClauseFalse() {
+			// Arrange
+			int count;
+			int expected = 0;
+
+			// Act
+			using( var context = new DirectoryContextMock() ) {
+				count = context.Users.Where(u => false).Count();
+			}
+
+			// Assert
+			Assert.AreEqual(expected, count);
 		}
 
 		[TestMethod]
@@ -214,13 +246,35 @@ namespace System.DirectoryServices.Linq.Tests
 		{
 			// Arrange
 			string firstName = TestUser.FirstName;
+			string notOrderedName;
+			string orderedName;
 
+			// Act
 			using (var context = new DirectoryContextMock())
 			{
-				var user = context.Users.OrderBy(u => u.LastName).Last(u => u.FirstName == firstName);
-
-				Assert.IsNotNull(user);
+				notOrderedName = context.Users.Last(u => u.FirstName == firstName).LastName;
+				orderedName = context.Users.OrderBy(u => u.LastName).Last(u => u.FirstName == firstName).LastName;
 			}
+
+			// Assert
+			Assert.AreNotEqual(notOrderedName, orderedName);
+		}
+
+		[TestMethod]
+		public void OrderByDescendingTest() {
+			// Arrange
+			string firstName = TestUser.FirstName;
+			string orderedName;
+			string reverseOrderedName;
+
+			// Act
+			using( var context = new DirectoryContextMock() ) {
+				orderedName = context.Users.OrderBy(u=>u.LastName).First( u => u.FirstName == firstName ).LastName;
+				reverseOrderedName = context.Users.OrderByDescending( u => u.LastName ).First( u => u.FirstName == firstName ).LastName;
+			}
+
+			// Assert
+			Assert.AreNotEqual( orderedName, reverseOrderedName );
 		}
 
 		[TestMethod]
@@ -235,6 +289,34 @@ namespace System.DirectoryServices.Linq.Tests
 
 				Assert.IsNull(user);
 			}
+		}
+
+		[TestMethod]
+		[ExpectedException( typeof( System.InvalidOperationException ) )]
+		public void LastUserFirstNameTest() {
+			// Arrange
+			string firstName = "asdf";
+
+			using( var context = new DirectoryContextMock() ) {
+				var user = context.Users.Last( u => u.FirstName == firstName );
+
+				Assert.IsNull( user );
+			}
+		}
+
+		[TestMethod]
+		[ExpectedException( typeof( System.InvalidOperationException ) )]
+		public void SingleFirstNameFailsTest() {
+			// Arrange
+			string firstName = TestUser.FirstName;
+
+			// Act
+			using( var context = new DirectoryContextMock() ) {
+				var user = context.Users.Single( u => u.FirstName == firstName );
+			}
+
+			// Assert
+			Assert.Fail( "Should have thrown an exception." );
 		}
 
 		[TestMethod]
@@ -271,6 +353,76 @@ namespace System.DirectoryServices.Linq.Tests
 		}
 
 		[TestMethod]
+		public void SkipTest() {
+			// Arrange
+			string firstNameStart = TestUser.FirstName.Substring( 0, 1 );
+			int skip = 1;
+			IEnumerable<User> expected;
+			IEnumerable<User> actual;
+
+			// Act
+			using( var context = new DirectoryContextMock() ) {
+				var queryBase = context.Users.Where( u => u.FirstName.StartsWith( firstNameStart ) );
+				int total = queryBase.Count();
+				if( total <= skip )
+					Assert.Inconclusive( "Not enough elements for this test." );
+
+				expected = queryBase.ToArray().Skip( skip );
+				actual = queryBase.Skip( skip ).ToArray();
+			}
+
+			// Assert
+			SequenceAssert.AreEqual( expected.Select( u => u.LastName ), actual.Select( u => u.LastName ) );
+		}
+
+		[TestMethod]
+		public void TakeTest() {
+			// Arrange
+			string firstNameStart = TestUser.FirstName.Substring( 0, 1 );
+			int take = 2;
+			IEnumerable<User> expected;
+			IEnumerable<User> actual;
+
+			// Act
+			using( var context = new DirectoryContextMock() ) {
+				var queryBase = context.Users.Where( u => u.FirstName.StartsWith( firstNameStart ) );
+				int total = queryBase.Count();
+				if( total <= take )
+					Assert.Inconclusive( "Not enough elements for this test." );
+
+				expected = queryBase.ToArray().Take( take );
+				actual = queryBase.Take( take ).ToArray();
+			}
+
+			// Assert
+			SequenceAssert.AreEqual( expected.Select( u => u.LastName ), actual.Select( u => u.LastName ) );
+		}
+
+		[TestMethod]
+		public void SkipTakeTest() {
+			// Arrange
+			string firstNameStart = TestUser.FirstName.Substring( 0, 1 );
+			int skip = 1;
+			int take = 2;
+			IEnumerable<User> expected;
+			IEnumerable<User> actual;
+
+			// Act
+			using( var context = new DirectoryContextMock() ) {
+				var queryBase = context.Users.Where( u => u.FirstName.StartsWith( firstNameStart ) );
+				int total = queryBase.Count();
+				if( total <= skip + take )
+					Assert.Inconclusive( "Not enough elements for this test." );
+
+				expected = queryBase.ToArray().Skip( skip ).Take( take );
+				actual = queryBase.Skip( skip ).Take( take ).ToArray();
+			}
+
+			// Assert
+			SequenceAssert.AreEqual( expected.Select( u => u.LastName ), actual.Select( u => u.LastName ) );
+		}
+
+		[TestMethod]
 		public void WhereFirstNameContainsTest()
 		{
 			string firstNameFragment1 = TestUser.FirstName.Substring(1, TestUser.FirstName.Length - 2);
@@ -299,49 +451,91 @@ namespace System.DirectoryServices.Linq.Tests
 		}
 
 		[TestMethod]
-		public void EntrySetCollectionQueryProviderInheritedTest()
-		{
-			// Test that the query provider for a sub-query matches that of the parent.
-
-			// Arrange
-			string ouName = this.ouName;
-			Type queryableType;
-			Type whereType;
-
-			// Act
-			using (var context = new DirectoryContextMock())
-			{
-				var queryable = context.OrganizationUnits.Single(u => u.Name == ouName).Users;
-				var where = queryable.Where(u => true);
-				queryableType = (queryable as IQueryable).Provider.GetType();
-				whereType = where.Provider.GetType();
-			}
-
-			// Assert
-			Assert.AreEqual(queryableType, whereType);
-		}
-
-
-		[TestMethod]
 		public void OneLevelTest()
 		{
 			// Test that the OneLevel option works with subqueries.
+			// Relies on there being at least one user in a sub-OU.
 
 			// Arrange
 			string ouName = this.ouName;
-			int expected = 0; // Change this to your expected number!
+			int unexpected;
 			int result;
 
 			// Act
 			using (var context = new DirectoryContextMock())
 			{
-				var queryable = context.OrganizationUnits.Single(u => u.Name == ouName).Users;
-				var x = queryable.Where(u => true);
-				result = x.Count();
+				var ou = context.OrganizationUnits.Single(u => u.Name == ouName);
+				result = ou.DirectUsers.Where( u => true ).Count();
+				unexpected = ou.Users.Count();
 			}
 
 			// Assert
-			Assert.AreEqual(expected, result);
+			Assert.AreNotEqual(unexpected, result);
 		}
+
+		/// <summary>
+		/// Check that string comparison with empty strings produces the expected results.
+		/// </summary>
+		[TestMethod]
+		public void EmptyStringTests() {
+			// Arrange
+			int expected;
+			int startingWith;
+			int endingWith;
+			int containing;
+			int equal;
+
+			// Act
+			using( var context = new DirectoryContextMock() ) {
+				expected = context.Users.Count();
+				startingWith = context.Users.Where(u=>u.UserName.StartsWith(string.Empty)).Count();
+				endingWith = context.Users.Where(u=>u.UserName.EndsWith(string.Empty)).Count();
+				containing = context.Users.Where(u=>u.UserName.Contains(string.Empty)).Count();
+				equal = context.Users.Where(u=>u.UserName == string.Empty).Count();
+			}
+
+			// Assert
+			Assert.AreEqual(expected, startingWith);
+			Assert.AreEqual(expected, endingWith);
+			Assert.AreEqual(expected, containing);
+			Assert.AreEqual(0, equal);
+		}
+
+		private static class SequenceAssert {
+			public static void AreEqual<T>( IEnumerable<T> expected, IEnumerable<T> actual ) {
+				AreEqualInt<T>( expected, actual );
+			}
+
+			private static void AreEqualInt<T>( IEnumerable<T> expected, IEnumerable<T> actual ) {
+				var expectedEnumerator = expected.GetEnumerator();
+				var actualEnumerator = actual.GetEnumerator();
+				int count = 0;
+				while( true ) {
+					bool expectedNext = expectedEnumerator.MoveNext();
+					bool actualNext = actualEnumerator.MoveNext();
+					if( expectedNext != actualNext ) {
+						// Get the full count.
+						int expectedCount = count;
+						int actualCount = count;
+						if( expectedNext ) {
+							expectedCount++;
+							while( expectedEnumerator.MoveNext() ) { expectedCount++; }
+						}
+						if( actualNext ) {
+							actualCount++;
+							while( actualEnumerator.MoveNext() ) { actualCount++; }
+						}
+						throw new AssertFailedException( string.Format( "Sizes do not match: expected {0}; received {1}", expectedCount, actualCount ) );
+					}
+					if( !actualNext ) {
+						// Since expectedNext == actualNext == false, so the enumerations are done.
+						break;
+					}
+					count++;
+					Assert.AreEqual( expectedEnumerator.Current, actualEnumerator.Current );
+				}
+			}
+		}
+
 	}
 }

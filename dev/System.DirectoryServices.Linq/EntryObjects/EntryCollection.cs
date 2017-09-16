@@ -48,28 +48,28 @@ namespace System.DirectoryServices.Linq.EntryObjects
         {
 			var propertyAttribute = _property.AssertGetAttribute<EntryCollectionPropertyAttribute>();
 			var filter = CreateFilter(typeof(TEntry), propertyAttribute);
-			var queryExecutor = _entryObject.Context.QueryExecutor;
 
-			using (var enumerator = GetEntryEnumerator(queryExecutor, propertyAttribute, filter))
-			{
-				while (enumerator.MoveNext())
-				{
-					_items.Add(enumerator.Current);
-				}
-			}
+			throw new NotImplementedException();
+			//using (var enumerator = GetEntryEnumerator(queryExecutor, propertyAttribute, filter))
+			//{
+			//	while (enumerator.MoveNext())
+			//	{
+			//		_items.Add(enumerator.Current);
+			//	}
+			//}
 
-			_isLoaded = true;
+			//_isLoaded = true;
 		}
 
-		private IEnumerator<TEntry> GetEntryEnumerator(IQueryExecutor queryExecutor, EntryCollectionPropertyAttribute propertyAttribute, string filter)
-		{
-			if (propertyAttribute.MatchingRule == MatchingRuleType.Children)
-			{
-				return queryExecutor.ExecuteQuery<TEntry>(_entryObject.Entry, propertyAttribute.Scope, filter);
-			}
+		//private IEnumerator<TEntry> GetEntryEnumerator(IQueryExecutor queryExecutor, EntryCollectionPropertyAttribute propertyAttribute, string filter)
+		//{
+		//	if (propertyAttribute.MatchingRule == MatchingRuleType.Children)
+		//	{
+		//		return queryExecutor.ExecuteQuery<TEntry>(_entryObject.Entry, propertyAttribute.Scope, filter);
+		//	}
 
-			return queryExecutor.ExecuteQuery<TEntry>(filter);
-		}
+		//	return queryExecutor.ExecuteQuery<TEntry>(filter);
+		//}
 
 		private string CreateFilter(Type entryType, EntryCollectionPropertyAttribute propertyAttribute)
 		{

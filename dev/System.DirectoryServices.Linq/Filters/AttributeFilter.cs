@@ -100,7 +100,8 @@ namespace System.DirectoryServices.Linq.Filters
 				}
 				case FilterOperator.Contains:
 				{
-					return string.Format("({0}=*{1}*)", Attribute, Value);
+					// Handle the case where {1} is replaced by String.Empty.
+					return string.Format("({0}=*{1}*)", Attribute, Value).Replace("**", "*");
 				}
 				case FilterOperator.StartsWith:
 				{

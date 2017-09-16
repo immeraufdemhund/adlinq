@@ -16,6 +16,8 @@ namespace System.DirectoryServices.Linq.EntryObjects
         private const int UF_DONT_EXPIRE_PASSWD = 0x10000;
 
         private IRelationshipManager _relationshipManager;
+		private DirectoryEntry _entry;
+		private DirectoryContext _context;
 
         #endregion
 
@@ -50,11 +52,25 @@ namespace System.DirectoryServices.Linq.EntryObjects
 
         internal string ADPath { get; set; }
 
-        internal DirectoryEntry Entry { get; set; }
+		internal virtual DirectoryEntry Entry {
+			get { return _entry; }
+			set {
+				_entry = value;
+				if( Parent == null ) {
+					SetParent( value.Parent );
+				}
+			}
+		}
 
         internal ChangeState ChangeState { get; set; }
 
-        internal DirectoryContext Context { get; set; }
+		internal virtual DirectoryContext Context {
+			get { return _context; }
+			set {
+				_context = value;
+				value.ChangeTracker.TrackChanges( this );
+			}
+		}
 
 		internal EntryObject Parent { get; set; }
 
@@ -153,6 +169,21 @@ namespace System.DirectoryServices.Linq.EntryObjects
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
             }
 		}
+
+        protected EntryCollection<TEntry> GetEntryCollection<TEntry>(string propertyName) where TEntry : EntryObject
+        {
+            return ((IEntryWithRelationships)this).RelationshipManager.GetEntryCollection<TEntry>(propertyName);
+        }
+
+        protected EntrySetCollection<TEntry> GetEntrySetCollection<TEntry>(string propertyName) where TEntry : EntryObject
+        {
+            return ((IEntryWithRelationships)this).RelationshipManager.GetEntrySetCollection<TEntry>(propertyName);
+        }
+
+        protected EntryReference<TEntry> GetEntryReference<TEntry>(string propertyName) where TEntry : EntryObject
+        {
+            return ((IEntryWithRelationships)this).RelationshipManager.GetEntryReference<TEntry>(propertyName);
+        }
 
 		public void SetParent(DirectoryEntry parent)
 		{

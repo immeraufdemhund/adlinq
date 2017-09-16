@@ -1,4 +1,5 @@
-﻿using System.DirectoryServices.Linq.Attributes;
+﻿using System.Collections.Generic;
+using System.DirectoryServices.Linq.Attributes;
 using System.DirectoryServices.Linq.EntryObjects;
 
 namespace System.DirectoryServices.Linq.Tests.Mocks
@@ -13,48 +14,9 @@ namespace System.DirectoryServices.Linq.Tests.Mocks
 		{
 		}
 
-		private IEntrySet<User> _users;
-		private IEntrySet<Group> _groups;
-		private IEntrySet<OU> _ous;
-
-		public IEntrySet<User> Users
-		{
-			get
-			{
-				if (_users == null)
-				{
-					_users = CreateEntrySet<User>();
-				}
-
-				return _users;
-			}
-		}
-
-		public IEntrySet<Group> Groups
-		{
-			get
-			{
-				if (_groups == null)
-				{
-					_groups = CreateEntrySet<Group>();
-				}
-
-				return _groups;
-			}
-		}
-
-		public IEntrySet<OU> OrganizationUnits
-		{
-			get
-			{
-				if (_ous == null)
-				{
-					_ous = CreateEntrySet<OU>();
-				}
-
-				return _ous;
-			}
-		}
+		public IEntrySet<User> Users { get; set; }
+		public IEntrySet<Group> Groups { get; set; }
+		public IEntrySet<OU> OrganizationUnits { get; set; }
 	}
 
 	[DirectoryType("User", "OU=ExternalUsers")]
@@ -166,13 +128,14 @@ namespace System.DirectoryServices.Linq.Tests.Mocks
 		}
 
 		[EntryCollectionProperty("member", MatchingRule = MatchingRuleType.InChain)]
-		public EntryCollection<Group> Groups
+		public IEnumerable<Group> Groups
 		{
-			get
-			{
-				return ((IEntryWithRelationships)this).RelationshipManager.GetEntryCollection<Group>("Groups");
-			}
+			get;
+			set;
 		}
+
+		[DirectoryProperty( "memberOf", true )]
+		public IEnumerable<string> DirectGroupNames { get; set; }
 	}
 
 	[DirectoryType("group", "OU=ExternalUsers")]
@@ -202,7 +165,7 @@ namespace System.DirectoryServices.Linq.Tests.Mocks
 		{
 			get
 			{
-				return ((IEntryWithRelationships)this).RelationshipManager.GetEntryCollection<User>("Users");
+				return GetEntryCollection<User>("Users");
 			}
 		}
 	}
@@ -218,7 +181,7 @@ namespace System.DirectoryServices.Linq.Tests.Mocks
 		{
 			get
 			{
-				return ((IEntryWithRelationships)this).RelationshipManager.GetEntrySetCollection<OU>("Ous");
+				return GetEntrySetCollection<OU>("Ous");
 			}
 		}
 
@@ -227,7 +190,16 @@ namespace System.DirectoryServices.Linq.Tests.Mocks
 		{
 			get
 			{
-				return ((IEntryWithRelationships)this).RelationshipManager.GetEntrySetCollection<User>("Users");
+				return GetEntrySetCollection<User>("Users");
+			}
+		}
+
+		[EntryCollectionProperty(MatchingRule = MatchingRuleType.Children, Scope = SearchScope.OneLevel)]
+		public EntrySetCollection<User> DirectUsers
+		{
+			get
+			{
+				return GetEntrySetCollection<User>("DirectUsers");
 			}
 		}
 
@@ -236,7 +208,7 @@ namespace System.DirectoryServices.Linq.Tests.Mocks
 		{
 			get
 			{
-				return ((IEntryWithRelationships)this).RelationshipManager.GetEntrySetCollection<Group>("Groups");
+				return GetEntrySetCollection<Group>("Groups");
 			}
 		}
 	}

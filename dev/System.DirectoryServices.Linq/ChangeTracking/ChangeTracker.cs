@@ -194,7 +194,7 @@ namespace System.DirectoryServices.Linq.ChangeTracking
                 }
                 else if (entry.ChangeState == ChangeState.Delete)
                 {
-                    entry.Entry.DeleteTree();
+                    entry.Entry.Parent.Children.Remove(entry.Entry);
                 }
             }
 

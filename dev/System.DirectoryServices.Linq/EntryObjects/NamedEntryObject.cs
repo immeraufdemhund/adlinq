@@ -6,5 +6,8 @@ namespace System.DirectoryServices.Linq.EntryObjects
 	{
 		[DirectoryProperty("samaccountname")]
 		public string Name { get; set; }
+
+		internal override DirectoryEntry Entry { get; set; }
+		internal override DirectoryContext Context { get; set; }
 	}
 }

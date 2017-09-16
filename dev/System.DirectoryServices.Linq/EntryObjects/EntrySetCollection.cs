@@ -9,10 +9,9 @@ namespace System.DirectoryServices.Linq.EntryObjects
 	{
 		#region Fields
 
-		private bool _isLoaded;
 		private readonly EntryObject _entryObject;
 		private PropertyInfo _property;
-		private List<TEntry> _items = new List<TEntry>();
+		private SearchScope? _scope = null;
 
 		#endregion
 
@@ -22,18 +21,35 @@ namespace System.DirectoryServices.Linq.EntryObjects
 		{
 			_entryObject = entryObject;
 			_property = property;
+
+			var attribute = _property.GetAttribute<EntryCollectionPropertyAttribute>();
+			if (attribute != null) {
+				_scope = attribute.Scope;
+			}
 		}
 
 		#endregion
 
-		#region Methods
+		#region Properties
 
-		protected override IQueryProvider GetProvider()
-		{
-			var attribute = _property.AssertGetAttribute<EntryCollectionPropertyAttribute>();
-			return new EntrySetCollectionQueryProvider(_entryObject, attribute.Scope, Context);
+		internal override DirectoryEntry RootEntry { get { return _entryObject.Entry; } }
+
+		internal override SearchScope? Scope {
+			get {
+				return this._scope;
+			}
 		}
 
 		#endregion
+
+		public override void AddEntry( string samAccountName, TEntry entry ) {
+			var entryObject = entry as EntryObject;
+
+			if( entryObject != null ) {
+				entryObject.Parent = _entryObject;
+				Context.AddObject<TEntry>( samAccountName, entry );
+			}
+		}
+
 	}
 }

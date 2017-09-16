@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30110.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.DirectoryServices.Linq.v4.0", "System.DirectoryServices.Linq\System.DirectoryServices.Linq.v4.0.csproj", "{3E15EB3B-F305-49A6-B8D2-438F01CF5AAD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.DirectoryServices.Linq.v4.0.Tests", "System.DirectoryServices.Linq.Tests\System.DirectoryServices.Linq.v4.0.Tests.csproj", "{90BCFBDD-C07D-4310-A9EA-86B920E9C35F}"
@@ -8,6 +10,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B320E5A7-C7AF-4C30-BDD6-240CD0506807}"
 	ProjectSection(SolutionItems) = preProject
 		Local.testsettings = Local.testsettings
+		Rebracer.xml = Rebracer.xml
 		System.DirectoryServices.Linq.vsmdi = System.DirectoryServices.Linq.vsmdi
 		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
 	EndProjectSection
@@ -57,9 +60,6 @@ Global
 		SccProjectName6 = System.DirectoryServices.Linq.Tests
 		SccLocalPath6 = System.DirectoryServices.Linq.Tests
 	EndGlobalSection
-	GlobalSection(TestCaseManagementSettings) = postSolution
-		CategoryFile = System.DirectoryServices.Linq.vsmdi
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -88,17 +88,19 @@ Global
 		{A2B17857-CCC6-42FB-A5FF-32F397DF6E8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A2B17857-CCC6-42FB-A5FF-32F397DF6E8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A2B17857-CCC6-42FB-A5FF-32F397DF6E8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A2B17857-CCC6-42FB-A5FF-32F397DF6E8C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{3E15EB3B-F305-49A6-B8D2-438F01CF5AAD} = {A103B85C-9F3D-4D4E-B9E1-6ED66FEF9F56}
 		{90BCFBDD-C07D-4310-A9EA-86B920E9C35F} = {A103B85C-9F3D-4D4E-B9E1-6ED66FEF9F56}
+		{3E15EB3B-F305-49A6-B8D2-438F01CF5AAD} = {A103B85C-9F3D-4D4E-B9E1-6ED66FEF9F56}
 		{C07DA492-0382-4014-BF6C-F4596BD4C1C1} = {C52693F0-BE4A-4269-A6F9-854815F4FBF1}
 		{20E632EE-4619-4A52-BCFD-94773BB97A96} = {C52693F0-BE4A-4269-A6F9-854815F4FBF1}
 		{2E4C862B-1496-492B-8361-33064476BE30} = {F8A0BB7D-18C8-4DB8-8EDD-0F4E21DB2475}
 		{A2B17857-CCC6-42FB-A5FF-32F397DF6E8C} = {F8A0BB7D-18C8-4DB8-8EDD-0F4E21DB2475}
+	EndGlobalSection
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = System.DirectoryServices.Linq.vsmdi
 	EndGlobalSection
 EndGlobal

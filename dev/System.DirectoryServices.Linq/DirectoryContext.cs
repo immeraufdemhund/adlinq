@@ -10,9 +10,6 @@ namespace System.DirectoryServices.Linq
         #region Fields
 
         private IChangeTracker _changeTracker;
-        private IResultMapper _resultMapper;
-        private IQueryTranslator _queryTranslator;
-        private IQueryExecutor _queryExecutor;
         private DirectoryQueryProvider _provider;
 
         #endregion
@@ -40,6 +37,7 @@ namespace System.DirectoryServices.Linq
         {
 			RootEntry = domainEntry;
             domainEntry.AuthenticationType = AuthenticationTypes.Secure;
+            EntrySetInitalizer.DiscoverAndInitiliseEntrySets(this);
         }
 
         #endregion
@@ -61,32 +59,6 @@ namespace System.DirectoryServices.Linq
             }
         }
 
-        public IResultMapper ResultMapper
-        {
-            get
-            {
-                if (_resultMapper == null)
-                {
-                    _resultMapper = GetResultMapper();
-                }
-
-                return _resultMapper;
-            }
-        }
-
-        public IQueryExecutor QueryExecutor
-        {
-            get
-            {
-                if (_queryExecutor == null)
-                {
-                    _queryExecutor = GetQueryExecutor();
-                }
-
-                return _queryExecutor;
-            }
-        }
-
         public IQueryProvider QueryProvider
         {
             get
@@ -97,19 +69,6 @@ namespace System.DirectoryServices.Linq
                 }
 
                 return _provider;
-            }
-        }
-
-        public IQueryTranslator Translator
-        {
-            get
-            {
-                if (_queryTranslator == null)
-                {
-                    _queryTranslator = GetQueryTranslator();
-                }
-
-                return _queryTranslator;
             }
         }
 
@@ -153,26 +112,6 @@ namespace System.DirectoryServices.Linq
         {
             return new ChangeTracker(this);
         }
-
-        protected virtual IResultMapper GetResultMapper()
-        {
-            return new ResultMapper(this);
-        }
-
-        protected virtual IQueryTranslator GetQueryTranslator()
-        {
-            return new QueryTranslator(this);
-        }
-
-        protected virtual IQueryExecutor GetQueryExecutor()
-        {
-            return new QueryExecutor(this);
-        }
-
-        //public IEntrySet<T> ExecuteCommand<T>(string commandText)
-        //{
-        //    return QueryExecutor.ExecuteQuery<T>(commandText);
-        //}
 
         public IEntrySet<T> CreateEntrySet<T>() where T : class
         {

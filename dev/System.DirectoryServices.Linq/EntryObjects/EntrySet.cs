@@ -18,7 +18,11 @@ namespace System.DirectoryServices.Linq.EntryObjects
 
         #region Properties
 
-        protected DirectoryContext Context { get; private set; }
+        internal DirectoryContext Context { get; private set; }
+
+		internal virtual DirectoryEntry RootEntry { get { return Context.RootEntry; } }
+
+		internal virtual SearchScope? Scope { get { return null; } }
 
         Type IQueryable.ElementType
         {
@@ -67,7 +71,7 @@ namespace System.DirectoryServices.Linq.EntryObjects
         #endregion
     }
 
-    public class EntrySet<T> : EntrySet, IEntrySet<T> where T : class
+    public class EntrySet<T> : EntrySet, IEntrySet<T>, IOrderedQueryable<T> where T : class
     {
         #region Constructors
 
@@ -94,15 +98,15 @@ namespace System.DirectoryServices.Linq.EntryObjects
             return GetEnumerator();
         }
 
-        protected virtual EntryQuery<T> CreateQuery()
-        {
-            return (EntryQuery<T>)GetProvider().CreateQuery<T>(GetExpression());
-        }
+		protected virtual IQueryable<T> CreateQuery()
+		{
+			return GetProvider().CreateQuery<T>(GetExpression());
+		}
 
-        IEntryQuery<T> IEntrySet<T>.CreateQuery()
-        {
-            return CreateQuery();
-        }
+		IQueryable<T> IEntrySet<T>.CreateQuery()
+		{
+			return CreateQuery();
+		}
 
         IEnumerator IEnumerable.GetEnumerator()
         {
@@ -114,13 +118,13 @@ namespace System.DirectoryServices.Linq.EntryObjects
             return CreateQuery().GetEnumerator();
         }
 
-        public void AddEntry(string samAccountName, T entry)
+        public virtual void AddEntry(string samAccountName, T entry)
         {
             var entryObject = entry as EntryObject;
 
             if (entryObject != null)
             {
-                Context.AddObject(samAccountName, entryObject);
+                Context.AddObject<T>(samAccountName, entry);
             }
         }
 
@@ -130,7 +134,7 @@ namespace System.DirectoryServices.Linq.EntryObjects
 
             if (entryObject != null)
             {
-                Context.DeleteObject(entryObject);
+                Context.DeleteObject<T>(entry);
             }
         }
 
